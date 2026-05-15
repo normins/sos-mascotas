@@ -1,0 +1,12 @@
+# Dependencias (esta carpeta es pesadísima y no se debe subir)
+node_modules/
+
+# Variables de entorno (claves de DB, tokens de seguridad)
+.env
+
+# Archivos temporales de sistema
+.DS_Store
+Thumbs.db
+
+# Logs de errores
+npm-debug.log*
