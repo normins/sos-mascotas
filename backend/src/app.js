@@ -2,20 +2,21 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
-// Importamos las rutas (asegúrate que la ruta sea correcta desde donde está app.js)
+// Importamos las rutas de los módulos
 const usuariosRoutes = require('./routes/usuarios');
+const mascotasRoutes = require('./routes/mascotas');
 
-// Middleware para poder recibir datos en formato JSON
+// Middleware para recibir datos en formato JSON
 app.use(express.json());
 
-// Endpoint de prueba para verificar que el servidor corre
+// Endpoint de prueba
 app.get('/', (req, res) => {
   res.send('API de SOS Mascotas funcionando 🐾');
 });
 
-// Usar las rutas definidas en la carpeta routes
-// Ahora todas las rutas de usuarios empezarán con /api/usuarios
+// Registramos las rutas
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/mascotas', mascotasRoutes);
 
 // Levantar el servidor
 app.listen(port, () => {
