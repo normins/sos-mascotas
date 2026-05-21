@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+// Al requerir el archivo de configuración, se ejecuta la prueba de conexión inmediatamente
+require('./config/db');
+
 // Importamos las rutas de los módulos
 const usuariosRoutes = require('./routes/usuarios');
 const mascotasRoutes = require('./routes/mascotas');

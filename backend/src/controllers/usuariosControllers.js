@@ -1,22 +1,48 @@
-// Esta función procesa la lógica de registro
-exports.registrarUsuario = (req, res) => {
-    const { nombre, email, password } = req.body;
+const db = require('../config/db');
 
-    // Validación básica de campos obligatorios (RF01)
-    if (!nombre || !email || !password) {
-        return res.status(400).json({ error: 'Faltan datos obligatorios' });
-    }
+const usuariosMock = [
+{ id: 1, nombre: "Admin", email: "admin@sos.com", rol: "admin" }
+];
 
-    // Por ahora simulamos que guardamos en la base de datos (RF25 futuro)
-    console.log(`Registrando nuevo usuario: ${nombre} (${email})`);
-    
-    // Devolvemos respuesta de éxito
-    res.status(201).json({
-        mensaje: "Usuario registrado con éxito en ÉpicaSoft",
-        usuario: { 
-            nombre, 
-            email, 
-            rol: 'adoptante' // Rol por defecto (RF02)
-        }
-    });
+exports.registrarUsuario = async (req, res, next) => {
+try {
+const { nombre, email, password } = req.body;
+
+if (!nombre || !email || !password) {
+  return res.status(400).json({ error: "Nombre, email y password son requeridos." });
+}
+
+const emailFormat = email.trim().toLowerCase();
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(emailFormat)) {
+  return res.status(400).json({ error: "Formato de email invalido." });
+}
+
+if (password.length < 6) {
+  return res.status(400).json({ error: "La contrasenia debe tener al menos 6 caracteres." });
+}
+
+if (db.isSimulated()) {
+  const existe = usuariosMock.find(u => u.email === emailFormat);
+  if (existe) return res.status(409).json({ error: "El email ya existe." });
+
+  const nuevoUsuario = { id: usuariosMock.length + 1, nombre, email: emailFormat, rol: "adoptante" };
+  usuariosMock.push(nuevoUsuario);
+  return res.status(201).json({ mensaje: "Usuario registrado en simulador", usuario: nuevoUsuario });
+}
+
+const consultaExiste = 'SELECT id FROM usuarios WHERE email = $1';
+const resultadoExiste = await db.query(consultaExiste, [emailFormat]);
+if (resultadoExiste.rows.length > 0) {
+  return res.status(409).json({ error: "El email ya esta registrado." });
+}
+
+const queryInsert = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol';
+const { rows } = await db.query(queryInsert, [nombre, emailFormat, password, 'adoptante']);
+
+return res.status(201).json({ mensaje: "Usuario registrado en BD real", usuario: rows[0] });
+} catch (error) {
+next(error);
+}
 };
