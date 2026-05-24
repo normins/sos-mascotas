@@ -1,1 +1,98 @@
-/* Frontend */ 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.login-container {
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background-color: #111;
+
+  padding: 40px;
+
+  width: 350px;
+
+  border-radius: 12px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  margin-bottom: 25px;
+  color: #bbb;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input {
+  padding: 12px;
+
+  border: none;
+  border-radius: 6px;
+
+  font-size: 16px;
+}
+
+button {
+  padding: 12px;
+
+  border: none;
+  border-radius: 6px;
+
+  background-color: #304ffe;
+
+  color: white;
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1e3cff;
+}
+
+#message {
+  margin-top: 20px;
+}
+
+.switch-form {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.switch-form span {
+  color: #4c6fff;
+  cursor: pointer;
+}
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.welcome-text {
+  margin-top: 15px;
+  color: white;
+}

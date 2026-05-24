@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -11,7 +12,7 @@ const mascotasRoutes = require('./routes/mascotas');
 
 // Middleware para recibir datos en formato JSON
 app.use(express.json());
-
+app.use(cors());
 // Endpoint de prueba
 app.get('/', (req, res) => {
   res.send('API de SOS Mascotas funcionando 🐾');

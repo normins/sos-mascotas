@@ -28,7 +28,7 @@ if (db.isSimulated()) {
   const existe = usuariosMock.find(u => u.email === emailFormat);
   if (existe) return res.status(409).json({ error: "El email ya existe." });
 
-  const nuevoUsuario = { id: usuariosMock.length + 1, nombre, email: emailFormat, rol: "adoptante" };
+  const nuevoUsuario = { id: usuariosMock.length + 1, nombre, email: emailFormat, password, rol: "adoptante" };
   usuariosMock.push(nuevoUsuario);
   return res.status(201).json({ mensaje: "Usuario registrado en simulador", usuario: nuevoUsuario });
 }
