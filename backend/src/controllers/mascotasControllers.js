@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+// Lista temporal de mascotas en memoria para el modo simulador
 const mascotasMock = [
   {
     id: 101,
@@ -31,21 +32,73 @@ const mascotasMock = [
   }
 ];
 
+// Obtener mascotas con filtro inteligente
 exports.obtenerMascotas = async (req, res, next) => {
   try {
-    if (db.isSimulated()) {
-      console.log('[Modo Simulador] Enviando lista completa de mascotas al muro.');
+    // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&localidad=...)
+    const { especie, sexo, localidad } = req.query;
 
-      return res.status(200).json(mascotasMock);
+    // Comportamiento en modo simulador 
+    if (db.isSimulated()) {
+      console.log('[Mascotas Simulador] Aplicando filtros:', req.query);
+
+      // Empezamos con la lista completa de mascotas simuladas
+      let resultadoSimulado = [...mascotasMock];
+
+      // Filtrar en memoria 
+      if (especie) {
+        resultadoSimulado = resultadoSimulado.filter(m => m.especie.toLowerCase() === especie.toLowerCase().trim());
+      }
+      if (sexo) {
+        resultadoSimulado = resultadoSimulado.filter(m => m.sexo.toLowerCase() === sexo.toLowerCase().trim());
+      }
+      if (localidad) {
+        resultadoSimulado = resultadoSimulado.filter(m => m.localidad.toLowerCase() === localidad.toLowerCase().trim());
+      } 
+
+      return res.status(200).json({
+        mensaje: "Lista de mascotas (Modo Simulador - Filtrada)",
+        total: resultadoSimulado.length,
+        mascotas: resultadoSimulado
+      });
     }
 
-    const { rows } = await db.query(
-      'SELECT * FROM mascotas ORDER BY id DESC'
-    );
+    // ==========================================
+    //  COMPORTAMIENTO EN BASE DE DATOS REAL
+    // ==========================================
+    // Iniciar la consulta base de SQL
+    let queryTexto = 'SELECT * FROM mascotas WHERE 1=1';
+    const queryValores = [];
+    let contadorParametros = 1;
 
-    return res.status(200).json(rows);
+    // Construir dinámicamente el WHERE de SQL según lo que pida la URL
+    if (especie) {
+      queryTexto += ` AND LOWER(especie) = $${contadorParametros}`;
+      queryValores.push(especie.toLowerCase().trim());
+      contadorParametros++;
+    }
+    if (sexo) {
+      queryTexto += ` AND LOWER(sexo) = $${contadorParametros}`;
+      queryValores.push(sexo.toLowerCase().trim());
+      contadorParametros++;
+    }
+    if (localidad) {
+      queryTexto += ` AND LOWER(localidad) = $${contadorParametros}`;
+      queryValores.push(localidad.toLowerCase().trim());
+      contadorParametros++;
+    }
 
-  } catch (error) {
+    // Ordenar para que las últimas cargadas aparezcan primero
+    queryTexto += ' ORDER BY id DESC';
+
+    const { rows } = await db.query(queryTexto, queryValores);
+
+    return res.status(200).json({
+      mensaje: "Lista de mascotas (Base de Datos Real - Filtrada)",
+      total: rows.length,
+      mascotas: rows
+    });
+    } catch (error) {
     next(error);
   }
 };

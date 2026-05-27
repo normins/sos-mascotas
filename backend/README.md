@@ -57,6 +57,12 @@ Una vez creada la base de datos sos_mascotas y sus tablas correspondientes en el
 ## Endpoints Listos para Testear (Modo Simulador / Real):
 Mascotas (Muro): GET y POST a http://localhost:3000/api/mascotas
 
+Mascotas (Muro con Filtros):** `GET` a `http://localhost:3000/api/mascotas`
+
+   _Ejemplo Filtrar Perros:_ `http://localhost:3000/api/mascotas?especie=Perro`
+
+   _Ejemplo Combinado:_ `http://localhost:3000/api/mascotas?especie=Perro&sexo=Hembra`
+
 Usuarios (Login): POST a http://localhost:3000/api/usuarios/login
 
 Usuarios (Registro): POST a http://localhost:3000/api/usuarios/registrar
