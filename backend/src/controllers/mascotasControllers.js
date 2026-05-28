@@ -34,7 +34,10 @@ const mascotasMock = [
 // Array en memoria para simular las solicitudes de adopción
 const adopcionesMock = [];
 
-// Obtener mascotas con filtro inteligente
+
+// .............................................................
+// *** Obtener mascotas con filtro inteligente
+// .............................................................
 exports.obtenerMascotas = async (req, res, next) => {
   try {
     // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&localidad=...)
@@ -65,10 +68,10 @@ exports.obtenerMascotas = async (req, res, next) => {
       });
     }
 
-    // ==========================================
-    //  COMPORTAMIENTO EN BASE DE DATOS REAL
-    // ==========================================
-    // Iniciar la consulta base de SQL
+    
+    // ..........................................
+    //  Comportamiento en base de datos real 
+    // ..........................................
     let queryTexto = 'SELECT * FROM mascotas WHERE 1=1';
     const queryValores = [];
     let contadorParametros = 1;
@@ -105,6 +108,10 @@ exports.obtenerMascotas = async (req, res, next) => {
   }
 };
 
+
+// .............................................................
+// *** Crear una nueva mascota (POST)
+// .............................................................
 exports.crearMascota = async (req, res, next) => {
   try {
     const { nombre, especie, sexo, tamanio } = req.body;
@@ -160,7 +167,10 @@ exports.crearMascota = async (req, res, next) => {
   }
 };
 
-// Crear solicitud de adopción
+
+// .............................................................
+// *** Crear solicitud de adopción
+// .............................................................
 exports.solicitarAdopcion = async (req, res, next) => {
   try {
     const mascotaId = parseInt(req.params.id); // Capturamos el :id de la URL
@@ -221,6 +231,70 @@ exports.solicitarAdopcion = async (req, res, next) => {
       mensaje: "Solicitud de adopción guardada en Base de Datos real.",
       solicitud: rows[0],
       mascota: checkMascota.rows[0].nombre
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// .............................................................
+// *** Actualizar el estado de una solicitud de adopción (PATCH)
+// .............................................................
+exports.actualizarEstadoAdopcion = async (req, res, next) => {
+  try {
+    const solicitudId = parseInt(req.params.solicitudId); // Capturamos el :solicitudId de la URL
+    const { nuevo_estado } = req.body; // Recibimos el estado ("Aprobada" o "Rechazada")
+
+    // Validamos que nos manden el estado correcto
+    const estadosValidos = ["Aprobada", "Rechazada", "Pendiente"];
+    if (!nuevo_estado || !estadosValidos.includes(nuevo_estado)) {
+      return res.status(400).json({ 
+        error: "Estado no válido. Los estados aceptados son: Aprobada o Rechazada." 
+      });
+    }
+    
+    // Comportamiento en modo simulador (actualizamos el estado en el array de adopcionesMock)
+    if (db.isSimulated()) {
+      console.log(`[Adopciones Simulador] Intentando actualizar Solicitud ID: ${solicitudId} a: ${nuevo_estado}`);
+
+      // Buscamos la solicitud en nuestro array simulado
+      const solicitud = adopcionesMock.find(a => a.id === solicitudId);
+      
+      if (!solicitud) {
+        return res.status(404).json({ error: "La solicitud de adopción indicada no existe en el simulador." });
+      }
+
+      // Cambiamos el estado en memoria RAM
+      solicitud.estado = nuevo_estado;
+      
+      // Actualizamos la variable compartida para que el controlador de usuarios también vea el cambio
+      global.adopcionesCompartidas = adopcionesMock;
+
+      return res.status(200).json({
+        mensaje: `¡Estado de la solicitud #${solicitudId} actualizado con éxito en el Simulador!`,
+        solicitud: solicitud
+      });
+    }
+    
+    // Comportamiento en base de datos real (actualizamos el estado en la tabla de adopciones de PostgreSQL)
+    const queryUpdate = `
+      UPDATE adopciones 
+      SET estado = $1 
+      WHERE id = $2 
+      RETURNING id, mascota_id, usuario_id, mensaje, estado, fecha_creacion
+    `;
+    
+    const { rows } = await db.query(queryUpdate, [nuevo_estado, solicitudId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La solicitud real indicada no existe en la Base de Datos." });
+    }
+
+    return res.status(200).json({
+      mensaje: "Estado de adopción actualizado en Base de Datos real.",
+      solicitud: rows[0]
     });
 
   } catch (error) {

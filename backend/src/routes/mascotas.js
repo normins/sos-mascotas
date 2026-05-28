@@ -13,4 +13,7 @@ router.post('/', mascotasController.crearMascota);
 // Ruta para solicitar adopción de una mascota (POST /api/mascotas/:id/adoptar)
 router.post('/:id/adoptar', mascotasController.solicitarAdopcion);
 
+// Ruta para cambiar el estado de una adopción por su ID
+router.patch('/adopciones/:solicitudId', mascotasController.actualizarEstadoAdopcion);
+
 module.exports = router;
