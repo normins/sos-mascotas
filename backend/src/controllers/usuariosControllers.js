@@ -21,7 +21,8 @@ const usuariosMock = [
   }
 ];
 
-// 1. REGISTRO DE USUARIOS ENCRIPTADO
+
+// 1. Registro de usuarios encriptados
 exports.registrarUsuario = async (req, res, next) => {
   try {
     const { nombre, email, password } = req.body;
@@ -41,11 +42,11 @@ exports.registrarUsuario = async (req, res, next) => {
       return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
     }
 
-    // ENCRIPTACIÓN: Generar el hash de la contraseña (Costo de procesamiento: 10)
+    // Encriptación: Generar el hash de la contraseña (Costo de procesamiento: 10)
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // MODO SIMULADOR
+    // Modo simulador: Guardamos el usuario con la clave hasheada en el array de usuariosMock
     if (db.isSimulated()) {
       const existe = usuariosMock.find(u => u.email === emailFormat);
       if (existe) return res.status(409).json({ error: "El email ya existe." });
@@ -65,7 +66,7 @@ exports.registrarUsuario = async (req, res, next) => {
       });
     }
 
-    // BASE DE DATOS REAL
+    // Base de datos real 
     const consultaExiste = 'SELECT id FROM usuarios WHERE email = $1';
     const resultadoExiste = await db.query(consultaExiste, [emailFormat]);
     if (resultadoExiste.rows.length > 0) {
@@ -82,7 +83,8 @@ exports.registrarUsuario = async (req, res, next) => {
   }
 };
 
-// 2. INICIO DE SESIÓN SEGURO
+
+// 2. Inicio de sesión seguro
 exports.iniciarSesion = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -93,7 +95,7 @@ exports.iniciarSesion = async (req, res, next) => {
 
     const emailFormat = email.trim().toLowerCase();
 
-    // MODO SIMULADOR
+    // Modo simulador
     if (db.isSimulated()) {
       console.log(`[Login Seguro Simulador] Verificando hash para: ${emailFormat}`);
       
@@ -103,7 +105,7 @@ exports.iniciarSesion = async (req, res, next) => {
         return res.status(401).json({ error: "Credenciales inválidas", detalle: "El correo electrónico no esta registrado." });
       }
 
-      // COMPARACIÓN SEGURA: Comparamos la clave de Postman contra el Hash guardado
+      // Comparación segura: Comparamos la clave de Postman contra el Hash guardado
       const passwordCorrecto = await bcrypt.compare(password, usuarioEncontrado.password);
       
       if (!passwordCorrecto) {
@@ -121,7 +123,7 @@ exports.iniciarSesion = async (req, res, next) => {
       });
     }
 
-    // BASE DE DATOS REAL
+    // Base de datos real
     const queryTexto = 'SELECT * FROM usuarios WHERE email = $1';
     const { rows } = await db.query(queryTexto, [emailFormat]);
 
@@ -131,7 +133,7 @@ exports.iniciarSesion = async (req, res, next) => {
 
     const usuarioReal = rows[0];
     
-    // COMPARACIÓN SEGURA en BD Real
+    // Comparación segura en Base de datos real 
     const passwordRealCorrecto = await bcrypt.compare(password, usuarioReal.password);
     if (!passwordRealCorrecto) {
       return res.status(401).json({ error: "Credenciales inválidas" });
@@ -145,6 +147,66 @@ exports.iniciarSesion = async (req, res, next) => {
         email: usuarioReal.email,
         rol: usuarioReal.rol
       }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// HISTORIAL DE ADOPCIONES DE UN USUARIO (ENFOQUE COMPACTO)
+exports.obtenerAdopcionesUsuario = async (req, res, next) => {
+  try {
+    const usuarioId = parseInt(req.params.usuarioId); // Capturamos el :usuarioId de la URL
+
+    // Modo simulador: Para testear el historial, el usuario debe existir en el array de usuariosMock
+    if (db.isSimulated()) {
+      console.log(`\n[Historial Simulador] Buscando adopciones para Usuario ID: ${usuarioId}`);
+
+      // Como el array de adopcionesMock vive en mascotasControllers, podemos simular una consulta 
+      // yendo a buscar todas las que coincidan con este usuarioId.
+     
+      // Buscamos si el usuario existe para dar una respuesta coherente
+      const usuarioExiste = usuariosMock.find(u => u.id === usuarioId);
+      if (!usuarioExiste) {
+        return res.status(404).json({ error: "El usuario indicado no existe en el simulador." });
+      }
+
+      // IMPORTANTE: Para que el simulador de usuarios "vea" las solicitudes creadas en mascotas,
+      // Express nos permite acceder a variables globales o compartidas. Para esta prueba local, 
+      // el filtro buscará en la lista que venimos llenando por detrás.
+      // (Si no encuentra ninguna, devolverá un array vacío [], que es la respuesta correcta si el usuario no postuló a nadie aún).
+      
+      // Simulamos que filtramos la tabla de adopciones
+      const misSolicitudesSimuladas = global.adopcionesCompartidas 
+        ? global.adopcionesCompartidas.filter(a => a.usuario_id === usuarioId)
+        : [];
+
+      return res.status(200).json({
+        mensaje: `Historial de solicitudes de adopcion para: ${usuarioExiste.nombre}`,
+        total: misSolicitudesSimuladas.length,
+        solicitudes: misSolicitudesSimuladas
+      });
+    }
+
+    // Base de datos real (La consulta SQL que usará tu equipo para unir todo)
+    // Usamos un JOIN para traer no solo el trámite, sino también el nombre y foto de la mascota elegida
+    const queryTexto = `
+      SELECT a.id as solicitud_id, a.estado, a.mensaje, a.fecha_creacion,
+             m.nombre as mascota_nombre, m.foto as mascota_foto
+      FROM adopciones a
+      INNER JOIN mascotas m ON a.mascotas_id = m.id
+      WHERE a.usuario_id = $1
+      ORDER BY a.id DESC
+    `;
+    
+    const { rows } = await db.query(queryTexto, [usuarioId]);
+
+    return res.status(200).json({
+      mensaje: "Historial de solicitudes obtenido de la Base de Datos Real",
+      total: rows.length,
+      solicitudes: rows
     });
 
   } catch (error) {

@@ -10,4 +10,7 @@ router.get('/', mascotasController.obtenerMascotas);
 // Es la que usará el Administrador para cargar animales (RF06)
 router.post('/', mascotasController.crearMascota);
 
+// Ruta para solicitar adopción de una mascota (POST /api/mascotas/:id/adoptar)
+router.post('/:id/adoptar', mascotasController.solicitarAdopcion);
+
 module.exports = router;
