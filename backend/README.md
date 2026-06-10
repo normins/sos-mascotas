@@ -55,16 +55,26 @@ DB_PORT=5433 (o el puerto configurado en su pgAdmin).
 Una vez creada la base de datos sos_mascotas y sus tablas correspondientes en el motor local, el backend desactivará el simulador y migrará el flujo de datos a la base real de forma totalmente automática en el próximo reinicio.
 
 ## Endpoints Listos para Testear (Modo Simulador / Real):
-#### 🎮 Endpoints Listos para Testear (Modo Simulador / Real):
+####  Endpoints Listos para Testear (Modo Simulador / Real):
 
 * **Mascotas (Muro Completo):** [`GET http://localhost:3000/api/mascotas`](http://localhost:3000/api/mascotas)
 * **Mascotas (Filtrar Perros):** [`GET http://localhost:3000/api/mascotas?especie=Perro`](http://localhost:3000/api/mascotas?especie=Perro)
 * **Usuarios (Login Seguro):** `POST` a `http://localhost:3000/api/usuarios/login`
 * **Usuarios (Registro Seguro):** `POST` a `http://localhost:3000/api/usuarios/registrar`
 
-#### 📩 Módulo de Adopciones (Nuevos Endpoints):
+####  Módulo de Adopciones (Nuevos Endpoints):
 
 * **Crear Solicitud de Adopción:** `POST` a `http://localhost:3000/api/mascotas/1/adoptar` *(Cambiar el '1' por el ID de la mascota elegida)*
 * **Historial de un Usuario:** [`GET http://localhost:3000/api/usuarios/2/adopciones`](http://localhost:3000/api/usuarios/2/adopciones) *(Cambiar el '2' por el ID del usuario)*
+####  Módulo de Emergencias Comunitarias (Nuevo)
+* **Ver Reportes Activos:** [`GET http://localhost:3000/api/reportes`](http://localhost:3000/api/reportes)
+* **Crear Alerta de Emergencia:** `POST` a `http://localhost:3000/api/reportes`
+
+####  Endpoints Protegidos (Middleware de Seguridad)
+* **Modificar Estado de Adopción (Solo Admin):** `PATCH` a `http://localhost:3000/api/mascotas/adopciones/1`
+  * *Nota: Requiere enviar en los Headers la clave `x-user-role` con el valor `admin`.*
+
+####  Cancelaciones
+* **Dar de Baja Solicitud:** `DELETE` a `http://localhost:3000/api/mascotas/adopciones/1`
 
 Nota: Para pruebas dinámicas en Modo Simulador, se puede utilizar el usuario de prueba juan@correo.com con la contraseña 123456 directamente en Postman.
