@@ -1,26 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// Lista temporal de usuarios en memoria (Las claves fijas ya están hasheadas para que el simulador no falle)
-// admin -> hash de 'admin'
-// 123456 -> hash de '123456'
-const usuariosMock = [
-  { 
-    id: 1, 
-    nombre: "Admin SOS", 
-    email: "admin@sosmascotas.org", 
-    password: "$2b$10$EPfG3Z9T7D0p3H9O6k0hO.v87pZqD7N77eN89r6Y4m5N4y4v4v4v.", 
-    rol: "admin" 
-  },
-  { 
-    id: 2, 
-    nombre: "Juan Adoptante", 
-    email: "juan@correo.com", 
-    password: "$2b$10$K7wD9Z9T7D0p3H9O6k0hO.x77pZqD7N77eN89r6Y4m5N4y4v4v4v.", 
-    rol: "adoptante" 
-  }
-];
-
+let usuariosMock = global.usuariosCompartidos || [];
 
 // 1. Registro de usuarios encriptados
 exports.registrarUsuario = async (req, res, next) => {
@@ -48,6 +29,7 @@ exports.registrarUsuario = async (req, res, next) => {
 
     // Modo simulador: Guardamos el usuario con la clave hasheada en el array de usuariosMock
     if (db.isSimulated()) {
+      let usuariosMock = global.usuariosCompartidos || [];
       const existe = usuariosMock.find(u => u.email === emailFormat);
       if (existe) return res.status(409).json({ error: "El email ya existe." });
 

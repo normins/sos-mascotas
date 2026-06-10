@@ -1,39 +1,7 @@
 const db = require('../config/db');
 
-// Lista temporal de mascotas en memoria para el modo simulador
-const mascotasMock = [
-  {
-    id: 101,
-    nombre: "Luna",
-    especie: "Perro",
-    sexo: "Hembra",
-    tamanio: "Mediano",
-    edad_estimada: "2 anos",
-    fotos: ["https://placedog.net/500/500?id=1"],
-    salud: "Vacunada y desparasitada",
-    estado: "Disponible",
-    ubicacion: "Castelar, Buenos Aires",
-    descripcion: "Muy juguetona, ideal para familias con ninos.",
-    requisitos_adopcion: "Patio cercado, compromiso de castracion."
-  },
-  {
-    id: 102,
-    nombre: "Simba",
-    especie: "Gato",
-    sexo: "Macho",
-    tamanio: "Pequeno",
-    edad_estimada: "5 meses",
-    fotos: ["https://picsum.photos/500/500?random=2"],
-    salud: "En tratamiento por otitis",
-    estado: "Disponible",
-    ubicacion: "Moron, Buenos Aires",
-    descripcion: "Rescatado de una colonia, muy mimoso.",
-    requisitos_adopcion: "Proteccion en ventanas con redes."
-  }
-];
-// Array en memoria para simular las solicitudes de adopción
-const adopcionesMock = [];
-
+let mascotasMock = global.mascotasCompartidas || [];
+let adopcionesMock = global.adopcionesCompartidas || [];
 
 // .............................................................
 // *** Obtener mascotas con filtro inteligente
@@ -45,6 +13,7 @@ exports.obtenerMascotas = async (req, res, next) => {
 
     // Comportamiento en modo simulador 
     if (db.isSimulated()) {
+      let mascotasMock = global.mascotasCompartidas || [];
       console.log('[Mascotas Simulador] Aplicando filtros:', req.query);
 
       // Empezamos con la lista completa de mascotas simuladas
@@ -60,7 +29,7 @@ exports.obtenerMascotas = async (req, res, next) => {
       if (localidad) {
         resultadoSimulado = resultadoSimulado.filter(m => m.localidad.toLowerCase() === localidad.toLowerCase().trim());
       } 
-
+      console.log(`[Mascotas Simulador] Muro solicitado. Enviando ${resultadoSimulado.length} mascotas.`);
       return res.status(200).json({
         mensaje: "Lista de mascotas (Modo Simulador - Filtrada)",
         total: resultadoSimulado.length,

@@ -1,6 +1,8 @@
+const seeder = require('./seeder');
 const express = require('express');
 const app = express();
 const port = 3000;
+
 
 // Al requerir el archivo de configuración, se ejecuta la prueba de conexión inmediatamente
 require('./config/db');
@@ -13,10 +15,16 @@ const reportesRoutes = require('./routes/reportes');
 // Middleware para recibir datos en formato JSON
 app.use(express.json());
 
+// Inyectar base de datos simulada de contingencia
+seeder.inicializarDatosSemilla();
+
 // Endpoint de prueba
 app.get('/', (req, res) => {
   res.send('API de SOS Mascotas funcionando 🐾');
 });
+
+
+
 
 // Registramos las rutas
 app.use('/api/usuarios', usuariosRoutes);

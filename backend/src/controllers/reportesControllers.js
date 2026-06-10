@@ -1,11 +1,13 @@
 const db = require('../config/db');
 
+let reportesMock = global.reportesCompartidos || [];
+
 // Array en memoria para el simulador de reportes comunitarios
-let reportesMock = [
+/*let reportesMock = [
   { id: 1, tipoReporte: "Extravío", descripcion: "Se busca a un caniche blanco por la zona de la plaza central. Tiene collar rojo.", anonimo: false, estado: "Pendiente", fecha_creacion: new Date().toISOString() },
   { id: 2, tipoReporte: "Maltrato", descripcion: "Perrito atado en un balcón sin agua ni sombra hace dos dias.", anonimo: true, estado: "En Revision", fecha_creacion: new Date().toISOString() }
 ];
-
+*/
 // 1. CREAR UN NUEVO REPORTE (POST)
 exports.crearReporte = async (req, res, next) => {
   try {
