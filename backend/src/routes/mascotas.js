@@ -1,3 +1,4 @@
+const authMiddleware = require('../middlewares/authMiddleware');
 const express = require('express');
 const router = express.Router();
 const mascotasController = require('../controllers/mascotasControllers');
@@ -14,6 +15,6 @@ router.post('/', mascotasController.crearMascota);
 router.post('/:id/adoptar', mascotasController.solicitarAdopcion);
 
 // Ruta para cambiar el estado de una adopción por su ID
-router.patch('/adopciones/:solicitudId', mascotasController.actualizarEstadoAdopcion);
+router.patch('/adopciones/:solicitudId', authMiddleware.requerirAdmin, mascotasController.actualizarEstadoAdopcion);
 
 module.exports = router
