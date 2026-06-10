@@ -17,4 +17,7 @@ router.post('/:id/adoptar', mascotasController.solicitarAdopcion);
 // Ruta para cambiar el estado de una adopción por su ID
 router.patch('/adopciones/:solicitudId', authMiddleware.requerirAdmin, mascotasController.actualizarEstadoAdopcion);
 
+// Ruta para cancelar una postulación de adopción
+router.delete('/adopciones/:solicitudId', mascotasController.cancelarAdopcion);
+
 module.exports = router

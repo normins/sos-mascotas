@@ -301,3 +301,62 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
     next(error);
   }
 };
+
+// ELIMINAR / CANCELAR UNA SOLICITUD DE ADOPCIÓN (DELETE)
+exports.cancelarAdopcion = async (req, res, next) => {
+  try {
+    const solicitudId = parseInt(req.params.solicitudId);
+
+    // ..........................................
+    // COMPORTAMIENTO EN MODO SIMULADOR
+    // ..........................................
+    if (db.isSimulated()) {
+      console.log(`[Adopciones Simulador] Intentando dar de baja la Solicitud ID: ${solicitudId}`);
+
+      // Buscamos la posición de la solicitud en el array
+      const indice = adopcionesMock.findIndex(a => a.id === solicitudId);
+
+      if (indice === -1) {
+        return res.status(404).json({ error: "La solicitud que deseas cancelar no existe en el simulador." });
+      }
+
+      // En vez de borrarla por completo (lo que alteraría los IDs de los demás), 
+      // la buena práctica es cambiar su estado a "Cancelada"
+      adopcionesMock[indice].estado = "Cancelada";
+
+      // Sincronizamos la memoria compartida con usuarios
+      global.adopcionesCompartidas = adopcionesMock;
+
+      return res.status(200).json({
+        mensaje: `¡Solicitud de adopción #${solicitudId} cancelada con éxito en el Simulador!`,
+        solicitud: adopcionesMock[indice]
+      });
+    }
+
+    // ...........................................
+    // COMPORTAMIENTO EN BASE DE DATOS REAL
+    // ...........................................
+    // En la base de datos real aplicamos la misma lógica (un UPDATE de estado)
+    // Vamos por la opción de actualizar estado a 'Cancelada' para no perder historial de auditoría:
+    const queryDelete = `
+      UPDATE adopciones 
+      SET estado = 'Cancelada' 
+      WHERE id = $1 
+      RETURNING id, mascota_id, usuario_id, estado
+    `;
+    
+    const { rows } = await db.query(queryDelete, [solicitudId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La solicitud real especificada no existe en la Base de datos." });
+    }
+
+    return res.status(200).json({
+      mensaje: "Solicitud de adopción dada de baja en Base de datos real.",
+      solicitud: rows[0]
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
