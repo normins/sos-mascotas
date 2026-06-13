@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 
 let usuariosMock = global.usuariosCompartidos || [];
 
+
 // 1. Registro de usuarios encriptados
 exports.registrarUsuario = async (req, res, next) => {
   try {
@@ -30,21 +31,29 @@ exports.registrarUsuario = async (req, res, next) => {
     // Modo simulador: Guardamos el usuario con la clave hasheada en el array de usuariosMock
     if (db.isSimulated()) {
       let usuariosMock = global.usuariosCompartidos || [];
-      const existe = usuariosMock.find(u => u.email === emailFormat);
-      if (existe) return res.status(409).json({ error: "El email ya existe." });
+
+      const existeEmail = usuariosMock.find(u => u.email === emailFormat);
+      if (existeEmail) {
+        console.log(`[Registro] Intento de duplicado para el email: ${emailFormat}`);
+        return res.status(400).json({ 
+          error: "Validación fallida", 
+          detalle: "El correo electrónico ya se encuentra registrado en el sistema." 
+        });
+      }
 
       const nuevoUsuario = { 
         id: usuariosMock.length + 1, 
         nombre, 
         email: emailFormat, 
-        password: passwordHash, // Guardamos la clave encriptada
+        password: passwordHash,
         rol: "adoptante" 
       };
       usuariosMock.push(nuevoUsuario);
+      global.usuariosCompartidos = usuariosMock;
       
       return res.status(201).json({ 
-        mensaje: "Usuario registrado en simulador (Clave Protegida)", 
-        usuario: { id: nuevoUsuario.id, nombre, email: emailFormat, rol: "adoptante" } 
+        mensaje: "Usuario registrado con éxito. (Modo simulador)", 
+        usuario: { id: nuevoUsuario.id, nombre, email: emailFormat, rol: nuevoUsuario.rol } 
       });
     }
 

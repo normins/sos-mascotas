@@ -42,14 +42,14 @@ exports.inicializarDatosSemilla = () => {
     nombre: "Simba",
     especie: "Gato",
     sexo: "Macho",
-    tamanio: "Pequeno",
+    tamanio: "Pequeño",
     edad_estimada: "5 meses",
     fotos: ["https://picsum.photos/500/500?random=2"],
     salud: "En tratamiento por otitis",
     estado: "Disponible",
-    ubicacion: "Moron, Buenos Aires",
+    ubicacion: "Morón, Buenos Aires",
     descripcion: "Rescatado de una colonia, muy mimoso.",
-    requisitos_adopcion: "Proteccion en ventanas con redes."
+    requisitos_adopcion: "Protección en ventanas con redes."
   }
 ];
 

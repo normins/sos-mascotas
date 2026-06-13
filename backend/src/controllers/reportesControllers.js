@@ -2,13 +2,9 @@ const db = require('../config/db');
 
 let reportesMock = global.reportesCompartidos || [];
 
-// Array en memoria para el simulador de reportes comunitarios
-/*let reportesMock = [
-  { id: 1, tipoReporte: "Extravío", descripcion: "Se busca a un caniche blanco por la zona de la plaza central. Tiene collar rojo.", anonimo: false, estado: "Pendiente", fecha_creacion: new Date().toISOString() },
-  { id: 2, tipoReporte: "Maltrato", descripcion: "Perrito atado en un balcón sin agua ni sombra hace dos dias.", anonimo: true, estado: "En Revision", fecha_creacion: new Date().toISOString() }
-];
-*/
-// 1. CREAR UN NUEVO REPORTE (POST)
+// .............................................................
+// *** Crear un nuevo reporte (POST)
+// .............................................................
 exports.crearReporte = async (req, res, next) => {
   try {
     const { tipoReporte, descripcion, anonimo } = req.body;
@@ -62,7 +58,9 @@ exports.crearReporte = async (req, res, next) => {
   }
 };
 
-// 2. OBTENER TODOS LOS REPORTES (GET)
+// .............................................................
+// *** Obtener todos los reportes (GET)
+// .............................................................
 exports.obtenerReportes = async (req, res, next) => {
   try {
     // ..........................................
@@ -95,7 +93,9 @@ exports.obtenerReportes = async (req, res, next) => {
 };
 
 
-// ACTUALIZAR ESTADO DE UN REPORTE COMUNITARIO (PATCH)
+// .............................................................
+// *** Actualizar el estado de un reporte comunitario (PATCH)
+// .............................................................
 exports.actualizarEstadoReporte = async (req, res, next) => {
   try {
     const reporteId = parseInt(req.params.id); // Capturamos el :id de la URL

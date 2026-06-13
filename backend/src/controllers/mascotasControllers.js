@@ -8,30 +8,32 @@ let adopcionesMock = global.adopcionesCompartidas || [];
 // .............................................................
 exports.obtenerMascotas = async (req, res, next) => {
   try {
-    // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&localidad=...)
-    const { especie, sexo, localidad } = req.query;
+    // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&tamanio=...)
+    const { especie, sexo, tamanio } = req.query;
 
     // Comportamiento en modo simulador 
     if (db.isSimulated()) {
       let mascotasMock = global.mascotasCompartidas || [];
-      console.log('[Mascotas Simulador] Aplicando filtros:', req.query);
+      console.log('[Muro Mascotas] Aplicando filtros de búsqueda:', req.query);
 
       // Empezamos con la lista completa de mascotas simuladas
       let resultadoSimulado = [...mascotasMock];
 
-      // Filtrar en memoria 
+      // Filtro por Especie (Perro/Gato) sin importar mayúsculas
       if (especie) {
         resultadoSimulado = resultadoSimulado.filter(m => m.especie.toLowerCase() === especie.toLowerCase().trim());
       }
+      // Filtro por Sexo (Hembra/Macho) sin importar mayúsculas
       if (sexo) {
         resultadoSimulado = resultadoSimulado.filter(m => m.sexo.toLowerCase() === sexo.toLowerCase().trim());
       }
-      if (localidad) {
-        resultadoSimulado = resultadoSimulado.filter(m => m.localidad.toLowerCase() === localidad.toLowerCase().trim());
-      } 
-      console.log(`[Mascotas Simulador] Muro solicitado. Enviando ${resultadoSimulado.length} mascotas.`);
-      return res.status(200).json({
-        mensaje: "Lista de mascotas (Modo Simulador - Filtrada)",
+      // Filtro por Tamaño (Pequeno/Mediano/Grande)
+      if (tamanio) {
+        resultadoSi = resultado.filter(m => m.tamanio.toLowerCase() === tamanio.toLowerCase());
+      }
+     
+       return res.status(200).json({
+        mensaje: "Lista de mascotas recuperado (Modo Simulador)",
         total: resultadoSimulado.length,
         mascotas: resultadoSimulado
       });
@@ -56,9 +58,9 @@ exports.obtenerMascotas = async (req, res, next) => {
       queryValores.push(sexo.toLowerCase().trim());
       contadorParametros++;
     }
-    if (localidad) {
-      queryTexto += ` AND LOWER(localidad) = $${contadorParametros}`;
-      queryValores.push(localidad.toLowerCase().trim());
+    if (tamanio) {
+      queryTexto += ` AND LOWER(tamanio) = $${contadorParametros}`;
+      queryValores.push(tamanio.toLowerCase().trim());
       contadorParametros++;
     }
 
@@ -76,7 +78,6 @@ exports.obtenerMascotas = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // .............................................................
 // *** Crear una nueva mascota (POST)
@@ -135,7 +136,6 @@ exports.crearMascota = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // .............................................................
 // *** Crear solicitud de adopción
@@ -210,7 +210,6 @@ exports.solicitarAdopcion = async (req, res, next) => {
   }
 };
 
-
 // .............................................................
 // *** Actualizar el estado de una solicitud de adopción (PATCH)
 // .............................................................
@@ -274,7 +273,9 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
   }
 };
 
-// ELIMINAR / CANCELAR UNA SOLICITUD DE ADOPCIÓN (DELETE)
+// .............................................................
+// *** Eliminar / Cancelar una solicitud de adopción (DELETE)
+// .............................................................
 exports.cancelarAdopcion = async (req, res, next) => {
   try {
     const solicitudId = parseInt(req.params.solicitudId);
@@ -334,7 +335,9 @@ exports.cancelarAdopcion = async (req, res, next) => {
   }
 };
 
-// OBTENER TODAS LAS SOLICITUDES DE ADOPCIÓN (GET)
+// .............................................................
+// *** Obtener todas las solicitudes de adopción (GET)
+// .............................................................
 exports.obtenerTodasLasAdopciones = async (req, res, next) => {
   try {
     // ..........................................
