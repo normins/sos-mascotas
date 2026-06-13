@@ -8,14 +8,15 @@ exports.inicializarDatosSemilla = () => {
     id: 1, 
     nombre: "Admin SOS", 
     email: "admin@sosmascotas.org", 
-    password: "$2b$10$EPfG3Z9T7D0p3H9O6k0hO.v87pZqD7N77eN89r6Y4m5N4y4v4v4v.", 
+    password: "$2b$10$7R6Vb4vM2X6qXG8H7KzOueW6vN3hD7r4YeE89r6M5N4y4v4v4v2S",
+    
     rol: "admin" 
   },
   { 
     id: 2, 
     nombre: "Juan Adoptante", 
     email: "juan@correo.com", 
-    password: "$2b$10$K7wD9Z9T7D0p3H9O6k0hO.x77pZqD7N77eN89r6Y4m5N4y4v4v4v.", 
+    password: "$2b$10$7R6Vb4vM2X6qXG8H7KzOueW6vN3hD7r4YeE89r6M5N4y4v4v4v2S",
     rol: "adoptante" 
   }
 ];

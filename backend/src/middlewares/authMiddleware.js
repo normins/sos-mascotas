@@ -8,7 +8,7 @@ exports.requerirAdmin = (req, res, next) => {
   
   const userRol = req.headers['x-user-role']; // Captura el rol desde el Header personalizado
 
-  console.log(`\n[Middleware Seguridad] Interceptando petición... Rol recibido en cabecera: "${userRol}"`);
+  console.log(`\n[Middleware Seguridad] Evaluando permiso... Rol recibido en cabecera: "${userRol}"`);
 
   // Si no mandan nada en el encabezado
   if (!userRol) {
@@ -18,7 +18,7 @@ exports.requerirAdmin = (req, res, next) => {
   }
 
   // Si mandan un rol pero no es el de Administrador (el refugio)
-  if (userRol.toLowerCase() !== 'admin') {
+  if (userRol.trim().toLowerCase() !== 'admin') {
     console.log(`SEGURIDAD: Acceso denegado para el rol "${userRol}". Se requiere nivel "admin".`);
     return res.status(403).json({ 
       error: "Acceso denegado. Sólo los usuarios administradores (refugios) pueden realizar esta acción." 

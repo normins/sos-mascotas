@@ -143,7 +143,7 @@ exports.crearMascota = async (req, res, next) => {
 exports.solicitarAdopcion = async (req, res, next) => {
   try {
     const mascotaId = parseInt(req.params.id); // Capturamos el :id de la URL
-    const { usuario_id, mensaje_motivacional } = req.body;
+    const { usuario_id, mensaje } = req.body;
 
     // Validaciones básicas
     if (!usuario_id) {
@@ -153,6 +153,9 @@ exports.solicitarAdopcion = async (req, res, next) => {
     // Modo simulador
     if (db.isSimulated()) {
       console.log(`[Adopciones Simulador] Procesando solicitud para Mascota ID: ${mascotaId} de Usuario ID: ${usuario_id}`);
+      //  Forzar sincronización con el Seeder al entrar a la función
+      let mascotasMock = global.mascotasCompartidas || [];
+      let adopcionesMock = global.adopcionesCompartidas || [];
 
       // Verificamos si la mascota existe en nuestro array de arriba
       const mascotaExiste = mascotasMock.find(m => m.id === mascotaId);
@@ -165,7 +168,7 @@ exports.solicitarAdopcion = async (req, res, next) => {
         id: adopcionesMock.length + 1,
         mascota_id: mascotaId,
         usuario_id: parseInt(usuario_id),
-        mensaje: mensaje_motivacional || "Sin mensaje adicional.",
+        mensaje: mensaje || "Sin mensaje adicional.",
         estado: "Pendiente", // Arranca siempre en revisión
         fecha_creacion: new Date().toISOString()
       };
@@ -281,7 +284,8 @@ exports.cancelarAdopcion = async (req, res, next) => {
     // ..........................................
     if (db.isSimulated()) {
       console.log(`[Adopciones Simulador] Intentando dar de baja la Solicitud ID: ${solicitudId}`);
-
+      // Sincronizamos con el array global de adopciones
+      let adopcionesMock = global.adopcionesCompartidas || [];
       // Buscamos la posición de la solicitud en el array
       const indice = adopcionesMock.findIndex(a => a.id === solicitudId);
 
@@ -323,6 +327,46 @@ exports.cancelarAdopcion = async (req, res, next) => {
     return res.status(200).json({
       mensaje: "Solicitud de adopción dada de baja en Base de datos real.",
       solicitud: rows[0]
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// OBTENER TODAS LAS SOLICITUDES DE ADOPCIÓN (GET)
+exports.obtenerTodasLasAdopciones = async (req, res, next) => {
+  try {
+    // ..........................................
+    // COMPORTAMIENTO EN MODO SIMULADOR
+    //...........................................
+    if (db.isSimulated()) {
+      // Sincronizamos con el array global de adopciones
+      let adopcionesMock = global.adopcionesCompartidas || [];
+      
+      console.log(`[Adopciones Simulador] Listando solicitudes. Total: ${adopcionesMock.length}`);
+      
+      return res.status(200).json({
+        mensaje: "Historial completo de solicitudes de adopción (Modo Simulador)",
+        total: adopcionesMock.length,
+        adopciones: adopcionesMock
+      });
+    }
+
+    // ..........................................
+    // COMPORTAMIENTO EN BASE DE DATOS REAL
+    // ..........................................
+    const queryReal = `
+      SELECT id, mascota_id as "mascotaId", usuario_id as "usuarioId", mensaje, estado, fecha_creacion
+      FROM solicitudes_adopcion
+      ORDER BY fecha_creacion DESC
+    `;
+    const { rows } = await db.query(queryReal);
+
+    return res.status(200).json({
+      mensaje: "Historial completo de solicitudes de adopción (Base de datos Real)",
+      total: rows.length,
+      adopciones: rows
     });
 
   } catch (error) {
