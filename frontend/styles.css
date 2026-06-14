@@ -96,3 +96,203 @@ button:hover {
   margin-top: 15px;
   color: white;
 }
+
+select,
+textarea {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+textarea {
+  min-height: 100px;
+  resize: none;
+}
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.welcome-text {
+  margin-top: 15px;
+  color: white;
+}
+
+.mascotas-list {
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 25px;
+
+}
+
+.mascota-card {
+
+  background-color: #111111;
+
+  border: 1px solid #1f1f1f;
+
+  border-radius: 12px;
+
+  padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+}
+
+.mascota-card h3 {
+
+  font-size: 28px;
+  color: white;
+
+}
+
+.mascota-card p {
+
+  color: #d8d8d8;
+
+  font-size: 16px;
+
+}
+
+.inactive-btn {
+
+  margin-top: 12px;
+
+  background-color: #374BFF;
+
+  border: none;
+
+  color: white;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+}
+
+.inactive-btn:hover {
+
+  opacity: 0.9;
+
+}
+
+.inactive-btn:disabled {
+
+  background-color: #444;
+
+  cursor: not-allowed;
+
+}
+
+.mascota-img {
+
+  width: 100%;
+  height: 220px;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+
+  margin-bottom: 15px;
+
+}
+
+.match-card {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+
+}
+
+.match-img {
+
+  width: 100%;
+  height: 320px;
+
+  object-fit: cover;
+
+  border-radius: 12px;
+
+}
+
+.match-info {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+}
+
+.match-info h2 {
+
+  color: white;
+
+  font-size: 38px;
+
+}
+
+.match-info p {
+
+  color: #d8d8d8;
+
+  font-size: 18px;
+
+}
+
+.match-buttons {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+}
+
+.reject-btn,
+.like-btn {
+
+  flex: 1;
+
+  border: none;
+
+  padding: 18px;
+
+  border-radius: 12px;
+
+  font-size: 28px;
+
+  cursor: pointer;
+
+}
+
+.reject-btn {
+
+  background-color: #d8f0f0;
+
+}
+
+.like-btn {
+
+  background-color: #ff00ff;
+
+  color: white;
+
+}
