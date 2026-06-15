@@ -5,6 +5,8 @@ const registerForm = document.getElementById('registerForm');
 const message = document.getElementById('message');
 
 const showRegister = document.getElementById('showRegister');
+const showLogin =
+  document.getElementById('showLogin');
 
 const loginContainer =
   document.querySelector('.login-card');
@@ -18,31 +20,61 @@ showRegister.addEventListener('click', () => {
   message.textContent = '';
 
 });
+showLogin.addEventListener('click', () => {
+
+  registerForm.style.display = 'none';
+
+  loginForm.style.display = 'flex';
+
+  message.textContent = '';
+
+});
+
+
 
 function renderPerfilForm(usuario) {
 
+  const perfilGuardado =
+    JSON.parse(
+      localStorage.getItem(
+        `perfilAdopcion_${usuario.email}`
+      )
+    ) || {};
+
   loginContainer.innerHTML = `
 
-    <h1>Perfil de adopción</h1>
+    <h1>Preferencias de adopción</h1>
 
     <p class="welcome-text">
-      Completa tus preferencias
+      Revisá o actualizá tus preferencias
     </p>
 
     <form id="perfilForm">
 
       <select id="tipoMascota" required>
+
         <option value="">
           Tipo de mascota
         </option>
 
-        <option value="Perro">
+        <option
+          value="Perro"
+          ${perfilGuardado.tipoMascota === 'Perro'
+      ? 'selected'
+      : ''}
+        >
           Perro
         </option>
 
-        <option value="Gato">
+        <option
+          value="Gato"
+          ${perfilGuardado.tipoMascota === 'Gato'
+      ? 'selected'
+      : ''}
+        >
           Gato
         </option>
+
       </select>
 
       <select id="tamanioPreferido" required>
@@ -51,15 +83,30 @@ function renderPerfilForm(usuario) {
           Tamaño preferido
         </option>
 
-        <option value="Pequeño">
+        <option
+          value="Pequeño"
+          ${perfilGuardado.tamanio === 'Pequeño'
+      ? 'selected'
+      : ''}
+        >
           Pequeño
         </option>
 
-        <option value="Mediano">
+        <option
+          value="Mediano"
+          ${perfilGuardado.tamanio === 'Mediano'
+      ? 'selected'
+      : ''}
+        >
           Mediano
         </option>
 
-        <option value="Grande">
+        <option
+          value="Grande"
+          ${perfilGuardado.tamanio === 'Grande'
+      ? 'selected'
+      : ''}
+        >
           Grande
         </option>
 
@@ -71,11 +118,21 @@ function renderPerfilForm(usuario) {
           ¿Tenés patio?
         </option>
 
-        <option value="Sí">
+        <option
+          value="Sí"
+          ${perfilGuardado.patio === 'Sí'
+      ? 'selected'
+      : ''}
+        >
           Sí
         </option>
 
-        <option value="No">
+        <option
+          value="No"
+          ${perfilGuardado.patio === 'No'
+      ? 'selected'
+      : ''}
+        >
           No
         </option>
 
@@ -84,7 +141,7 @@ function renderPerfilForm(usuario) {
       <textarea
         id="descripcionUsuario"
         placeholder="Contanos un poco sobre vos"
-      ></textarea>
+      >${perfilGuardado.descripcion || ''}</textarea>
 
       <button type="submit">
         Guardar preferencias
@@ -127,11 +184,12 @@ function renderPerfilForm(usuario) {
     };
 
     localStorage.setItem(
-      'perfilAdopcion',
+      `perfilAdopcion_${usuario.email}`,
       JSON.stringify(perfil)
     );
 
-    alert('Preferencias guardadas');
+
+    renderAdoptantePanel(usuario);
 
   });
 
@@ -144,6 +202,8 @@ function renderPerfilForm(usuario) {
     });
 
 }
+
+
 
 async function renderGestionMascotas(usuario) {
 
@@ -440,7 +500,7 @@ function renderAdminPanel(usuario) {
 }
 
 function renderAdoptantePanel(usuario) {
-
+  console.log(usuario);
   loginContainer.innerHTML = `
 
     <h1>Mi perfil</h1>
@@ -479,7 +539,7 @@ function renderAdoptantePanel(usuario) {
     .getElementById('matchesBtn')
     .addEventListener('click', () => {
 
-     renderMatches(usuario);
+      renderMatches(usuario);
 
     });
 
@@ -543,41 +603,64 @@ async function renderMatches(usuario) {
             class="match-img"
           >
 
-          <div class="match-info">
+<div class="match-info">
 
-            <h2>${mascota.nombre}</h2>
+  <h2>${mascota.nombre}</h2>
 
-            <p>
-              ${mascota.especie}
-            </p>
+  <p>
+    ${mascota.especie} • ${mascota.sexo}
+  </p>
 
-            <p>
-              ${mascota.sexo}
-            </p>
+  <p>
+    ${mascota.tamanio}
+  </p>
 
-            <p>
-              ${mascota.tamanio}
-            </p>
+  <p>
+    ${mascota.edad_estimada}
+  </p>
 
-          </div>
+  <p>
+    ${mascota.ubicacion}
+  </p>
 
-          <div class="match-buttons">
+  <p>
+    ${mascota.descripcion}
+  </p>
 
-            <button
-              id="rejectBtn"
-              class="reject-btn"
-            >
-              ✖
-            </button>
+  <p>
+    <strong>Requisitos:</strong>
+    ${mascota.requisitos_adopcion}
+  </p>
 
-            <button
-              id="likeBtn"
-              class="like-btn"
-            >
-              ❤
-            </button>
+</div>
 
-          </div>
+
+
+<div class="match-buttons">
+
+  <button
+    id="rejectBtn"
+    class="reject-btn"
+  >
+    ✖
+  </button>
+
+  <button
+    id="likeBtn"
+    class="like-btn"
+  >
+    ❤
+  </button>
+
+  <button
+    id="volverMatchesBtn"
+  >
+    Volver
+  </button>
+
+</div>
+
+
 
         </div>
 
@@ -593,13 +676,19 @@ async function renderMatches(usuario) {
 
         });
 
+document
+  .getElementById('volverMatchesBtn')
+  .addEventListener('click', () => {
+
+    renderAdoptantePanel(usuario);
+
+  });
+
+
+
       document
         .getElementById('likeBtn')
         .addEventListener('click', () => {
-
-          alert(
-            `Te interesó ${mascota.nombre}`
-          );
 
           currentIndex++;
 
