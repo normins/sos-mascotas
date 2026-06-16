@@ -42,7 +42,7 @@ exports.registrarUsuario = async (req, res, next) => {
       }
 
       const nuevoUsuario = { 
-        id: usuariosMock.length + 1, 
+        id_usuario: usuariosMock.length + 1, 
         nombre, 
         email: emailFormat, 
         password: passwordHash,
@@ -53,20 +53,20 @@ exports.registrarUsuario = async (req, res, next) => {
       
       return res.status(201).json({ 
         mensaje: "Usuario registrado con éxito. (Modo simulador)", 
-        usuario: { id: nuevoUsuario.id, nombre, email: emailFormat, rol: nuevoUsuario.rol } 
+        usuario: { id: nuevoUsuario.id_usuario, nombre, email: emailFormat, rol: nuevoUsuario.rol } 
       });
     }
 
     // Base de datos real 
-    const consultaExiste = 'SELECT id FROM usuarios WHERE email = $1';
+    const consultaExiste = 'SELECT id_usuario FROM usuarios WHERE email = $1';
     const resultadoExiste = await db.query(consultaExiste, [emailFormat]);
     if (resultadoExiste.rows.length > 0) {
       return res.status(409).json({ error: "El email ya está registrado." });
     }
 
     // Insertamos el passwordHash en lugar de la clave original
-    const queryInsert = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol';
-    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHasheado, 'adoptante']);
+    const queryInsert = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario, nombre, email, rol';
+    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, 'adoptante']);
     
     return res.status(201).json({ mensaje: "Usuario registrado en BD real con encriptación", usuario: rows[0] });
   } catch (error) {
@@ -111,7 +111,7 @@ exports.iniciarSesion = async (req, res, next) => {
       return res.status(200).json({
         mensaje: "¡Inicio de sesión exitoso y seguro (Simulado)!",
         usuario: {
-          id: usuarioExiste.id,
+          id_usuario: usuarioExiste.id_usuario,
           nombre: usuarioExiste.nombre,
           email: usuarioExiste.email,
           rol: usuarioExiste.rol
@@ -138,7 +138,7 @@ exports.iniciarSesion = async (req, res, next) => {
     return res.status(200).json({
       mensaje: "¡Inicio de sesión exitoso en Base de datos real con seguridad bcrypt!",
       usuario: {
-        id: usuarioReal.id,
+        id_usuario: usuarioReal.id_usuario,
         nombre: usuarioReal.nombre,
         email: usuarioReal.email,
         rol: usuarioReal.rol
@@ -194,7 +194,7 @@ exports.obtenerAdopcionesUsuario = async (req, res, next) => {
       SELECT a.id as solicitud_id, a.estado, a.mensaje, a.fecha_creacion,
              m.nombre as mascota_nombre, m.foto as mascota_foto
       FROM adopciones a
-      INNER JOIN mascotas m ON a.mascotas_id = m.id
+      INNER JOIN mascotas m ON a.mascotas_id = m.id_mascota
       WHERE a.usuario_id = $1
       ORDER BY a.id DESC
     `;

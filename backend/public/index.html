@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SOS Mascotas</title>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="login-container">
+
+    <div class="login-card">
+
+      <h1>SOS Mascotas 🐾</h1>
+
+      <p class="subtitle">
+        Iniciá sesión para continuar
+      </p>
+
+      <form id="loginForm">
+
+        <input 
+          type="email"
+          id="email"
+          placeholder="Correo electrónico"
+          required
+        >
+
+        <input 
+          type="password"
+          id="password"
+          placeholder="Contraseña"
+          required
+        >
+
+        <button type="submit">
+          Ingresar
+        </button>
+
+      </form>
+      <p class="switch-form">
+        ¿No tenés cuenta?
+        <span id="showRegister">
+        Registrate
+        </span>
+     </p>
+      <p id="message"></p>
+
+<form id="registerForm" style="display:none;">
+
+  <p class="subtitle">
+    ¿Ya tenés cuenta?
+    <a href="#" id="showLogin">
+      Iniciá sesión
+    </a>
+  </p>
+
+  <input
+    type="text"
+    id="registerName"
+    placeholder="Nombre"
+    required
+  >
+
+  <input
+    type="email"
+    id="registerEmail"
+    placeholder="Correo electrónico"
+    required
+  >
+
+  <input
+    type="password"
+    id="registerPassword"
+    placeholder="Contraseña"
+    required
+  >
+
+  <button type="submit">
+    Crear cuenta
+  </button>
+
+</form>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

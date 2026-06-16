@@ -7,6 +7,10 @@ const port = 3000;
 // Al requerir el archivo de configuración, se ejecuta la prueba de conexión inmediatamente
 require('./config/db');
 
+// LÍNEA MÁGICA: Le dice a Node que busque el HTML/CSS/JS en la carpeta public
+app.use(express.static('public'));
+
+
 // Importamos las rutas de los módulos
 const usuariosRoutes = require('./routes/usuarios');
 const mascotasRoutes = require('./routes/mascotas');

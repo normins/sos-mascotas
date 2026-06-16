@@ -9,9 +9,10 @@ let adopcionesMock = global.adopcionesCompartidas || [];
 exports.obtenerMascotas = async (req, res, next) => {
   try {
     // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&tamanio=...)
-    const { especie, sexo, tamanio } = req.query;
+    const { especie, sexo } = req.query;
 
     // Comportamiento en modo simulador 
+    
     if (db.isSimulated()) {
       let mascotasMock = global.mascotasCompartidas || [];
       console.log('[Muro Mascotas] Aplicando filtros de búsqueda:', req.query);
@@ -27,11 +28,7 @@ exports.obtenerMascotas = async (req, res, next) => {
       if (sexo) {
         resultadoSimulado = resultadoSimulado.filter(m => m.sexo.toLowerCase() === sexo.toLowerCase().trim());
       }
-      // Filtro por Tamaño (Pequeno/Mediano/Grande)
-      if (tamanio) {
-        resultadoSi = resultado.filter(m => m.tamanio.toLowerCase() === tamanio.toLowerCase());
-      }
-     
+           
        return res.status(200).json({
         mensaje: "Lista de mascotas recuperado (Modo Simulador)",
         total: resultadoSimulado.length,
@@ -58,17 +55,12 @@ exports.obtenerMascotas = async (req, res, next) => {
       queryValores.push(sexo.toLowerCase().trim());
       contadorParametros++;
     }
-    if (tamanio) {
-      queryTexto += ` AND LOWER(tamanio) = $${contadorParametros}`;
-      queryValores.push(tamanio.toLowerCase().trim());
-      contadorParametros++;
-    }
-
+    
     // Ordenar para que las últimas cargadas aparezcan primero
-    queryTexto += ' ORDER BY id DESC';
+    queryTexto += ' ORDER BY id_mascota DESC';
 
     const { rows } = await db.query(queryTexto, queryValores);
-
+    
     return res.status(200).json({
       mensaje: "Lista de mascotas (Base de Datos Real - Filtrada)",
       total: rows.length,
@@ -84,9 +76,9 @@ exports.obtenerMascotas = async (req, res, next) => {
 // .............................................................
 exports.crearMascota = async (req, res, next) => {
   try {
-    const { nombre, especie, sexo, tamanio } = req.body;
+    const { nombre, especie, sexo } = req.body;
 
-    if (!nombre || !especie || !sexo || !tamanio) {
+    if (!nombre || !especie || !sexo ) {
       return res.status(400).json({
         error: 'Faltan campos obligatorios.'
       });
@@ -95,10 +87,9 @@ exports.crearMascota = async (req, res, next) => {
     if (db.isSimulated()) {
       const nuevaMascota = {
         id: mascotasMock.length + 101,
-        nombre,
+        nombre,  
         especie,
         sexo,
-        tamanio,
         estado: 'Disponible'
       };
 
@@ -112,8 +103,8 @@ exports.crearMascota = async (req, res, next) => {
 
     const queryTexto = `
       INSERT INTO mascotas
-      (nombre, especie, sexo, tamanio, estado)
-      VALUES ($1, $2, $3, $4, $5)
+      (nombre, especie, sexo, estado)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
 
@@ -121,7 +112,6 @@ exports.crearMascota = async (req, res, next) => {
       nombre,
       especie,
       sexo,
-      tamanio,
       'Disponible'
     ];
 
@@ -185,18 +175,18 @@ exports.solicitarAdopcion = async (req, res, next) => {
 
     // Base de datos real (Dejamos escrita la consulta lista para el futuro)
     // 1. Verificar primero si la mascota existe en PostgreSQL
-    const checkMascota = await db.query('SELECT id, nombre FROM mascotas WHERE id = $1', [mascotaId]);
+    const checkMascota = await db.query('SELECT id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
     if (checkMascota.rows.length === 0) {
       return res.status(404).json({ error: "La mascota real indicada no existe en la Base de Datos." });
     }
 
     // 2. Insertar la solicitud en la tabla de adopciones
     const queryInsert = `
-      INSERT INTO adopciones (mascota_id, usuario_id, mensaje, estado) 
+      INSERT INTO adopciones (id_mascota, id_usuario, mensaje, estado) 
       VALUES ($1, $2, $3, $4) 
-      RETURNING id, mascota_id, usuario_id, mensaje, estado, fecha_creacion
+      RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
     `;
-    const valores = [mascotaId, usuario_id, mensaje_motivacional, 'Pendiente'];
+    const valores = [mascotaId, id_usuario, mensaje_motivacional, 'Pendiente'];
     const { rows } = await db.query(queryInsert, valores);
 
     return res.status(201).json({
@@ -254,7 +244,7 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
       UPDATE adopciones 
       SET estado = $1 
       WHERE id = $2 
-      RETURNING id, mascota_id, usuario_id, mensaje, estado, fecha_creacion
+      RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
     `;
     
     const { rows } = await db.query(queryUpdate, [nuevo_estado, solicitudId]);
@@ -316,7 +306,7 @@ exports.cancelarAdopcion = async (req, res, next) => {
       UPDATE adopciones 
       SET estado = 'Cancelada' 
       WHERE id = $1 
-      RETURNING id, mascota_id, usuario_id, estado
+      RETURNING id, id_mascota, id_usuario, estado
     `;
     
     const { rows } = await db.query(queryDelete, [solicitudId]);
@@ -360,7 +350,7 @@ exports.obtenerTodasLasAdopciones = async (req, res, next) => {
     // COMPORTAMIENTO EN BASE DE DATOS REAL
     // ..........................................
     const queryReal = `
-      SELECT id, mascota_id as "mascotaId", usuario_id as "usuarioId", mensaje, estado, fecha_creacion
+      SELECT id, id_mascota as "mascotaId", id_usuario as "usuarioId", mensaje, estado, fecha_creacion
       FROM solicitudes_adopcion
       ORDER BY fecha_creacion DESC
     `;
