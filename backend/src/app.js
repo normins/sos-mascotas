@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 const usuariosRoutes = require('./routes/usuarios');
 const mascotasRoutes = require('./routes/mascotas');
 const reportesRoutes = require('./routes/reportes');
+const adopcionesRoutes = require('./routes/adopcionesRoutes');
 
 // Middleware para recibir datos en formato JSON
 app.use(express.json());
@@ -43,6 +44,7 @@ app.get('/login', (req, res) => {
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/mascotas', mascotasRoutes);
 app.use('/api/reportes', reportesRoutes);
+app.use('/api/adopciones', adopcionesRoutes);
 
 // Levantar el servidor
 app.listen(port, () => {
