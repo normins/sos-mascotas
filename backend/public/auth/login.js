@@ -209,11 +209,16 @@ async function renderGestionMascotas(usuario) {
 
   try {
 
-    const response = await fetch(
-      '/api/mascotas'
+    const response = await fetch('/api/mascotas'
     );
 
-    const mascotas = await response.json();
+    let mascotas = await response.json();
+
+    // Si lo que vuelve no es una lista, la convertimos en una lista vacía
+    if (!Array.isArray(mascotas)) {
+      mascotas = [];
+    } 
+
 
     loginContainer.innerHTML = `
 
@@ -564,7 +569,7 @@ async function renderMatches(usuario) {
 
     function renderCard() {
 
-      if (currentIndex >= mascotas.length) {
+      if (currentIndex >= mascotas.length || !mascotas[currentIndex]) {
 
         loginContainer.innerHTML = `
 
