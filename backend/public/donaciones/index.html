@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SOS Mascotas - Donaciones comunitarias</title>
+  <link rel="stylesheet" href="/styles-global.css">
+  <link rel="stylesheet" href="/donaciones/donaciones.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">SOS Mascotas <span>🐾</span></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Inicio</a></li>
+      <li><a href="/muro">Muro</a></li>
+      <li><a href="/donaciones" class="active">Donaciones</a></li>
+      <li><a href="/login">Ingresar</a></li>
+    </ul>
+  </header>
+
+  <main class="donaciones-container">
+    <div class="header-titulos">
+      <h1 class="titulo-pagina">Apoyá al Refugio</h1>
+      <p class="subtitulo-pagina">Tu ayuda económica nos permite seguir salvando vidas y financiando rescates</p>
+    </div>
+
+    <div class="panel-donacion">
+      <h2>Elegí el importe a donar</h2>
+      
+      <div class="grilla-montos">
+        <button class="btn-monto" data-monto="1000">$1.000</button>
+        <button class="btn-monto" data-monto="3000">$3.000</button>
+        <button class="btn-monto" data-monto="5000">$5.000</button>
+        <button id="btn-monto-personalizado" class="btn-monto">Otro monto</button>
+      </div>
+
+      <div id="custom-monto-container" class="input-custom-wrapper hidden">
+        <label for="input-monto-personalizado">Ingresá el valor en ARS:</label>
+        <input type="number" id="input-monto-personalizado" placeholder="Mínimo $100" class="filtro-select">
+      </div>
+
+      <button id="btn-procesar-donacion" class="btn-primary" disabled>Selecciona un monto</button>
+      <div id="donacion-mensaje" class="mensaje-alerta hidden"></div>
+    </div>
+
+    <div class="panel-donacion cbu-section">
+      <h3>Transferencia Directa (Alias / CBU)</h3>
+      <p class="detalles-p">Si preferís transferir desde tu homebanking:</p>
+      <div class="cbu-box">
+        <span id="cbu-texto">CBU: 0000003100096324857152</span>
+        <button onclick="copiarAlPortapapeles('cbu-texto')" class="btn-copiar">Copiar</button>
+      </div>
+      <div class="cbu-box">
+        <span id="alias-texto">Alias: epicasoft.sos.mascotas</span>
+        <button onclick="copiarAlPortapapeles('alias-texto')" class="btn-copiar">Copiar</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="donaciones.js"></script>
+</body>
+</html>

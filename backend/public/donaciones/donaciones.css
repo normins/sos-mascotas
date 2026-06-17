@@ -1,0 +1,113 @@
+.donaciones-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.panel-donacion {
+  background-color: var(--card);
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-donacion h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.grilla-montos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.btn-monto {
+  background-color: #1A1A1A;
+  color: var(--text-secondary);
+  border: 1px solid #333;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-monto:hover {
+  border-color: var(--text-secondary);
+  color: var(--text);
+}
+
+.btn-monto.selected {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
+  box-shadow: 0 0 12px rgba(48, 79, 251, 0.4);
+}
+
+.input-custom-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.input-custom-wrapper label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.hidden {
+  display: none !important;
+}
+
+#btn-procesar-donacion {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+}
+
+/* Alertas */
+.mensaje-alerta {
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  background-color: rgba(48, 79, 251, 0.1);
+  border: 1px solid var(--primary);
+  color: var(--text);
+}
+
+/* CBU Boxes */
+.cbu-section h3 {
+  font-size: 20px;
+}
+
+.cbu-box {
+  background-color: #0D0D0D;
+  border: 1px dashed #333;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-copiar {
+  background-color: #222;
+  color: var(--text);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-copiar:hover {
+  background-color: #333;
+}

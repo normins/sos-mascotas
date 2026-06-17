@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SOS Mascotas - Muro de Adopciones</title>
+  <link rel="stylesheet" href="/styles-global.css">
+  <link rel="stylesheet" href="/muro/muro.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">SOS Mascotas <span>🐾</span></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Inicio</a></li>
+      <li><a href="muro.html" class="active">Muro</a></li>
+      <li><a href="../donaciones/donaciones.html">Donaciones</a></li>
+    </ul>
+  </header>
+
+  <main class="muro-container">
+    <div class="header-titulos">
+      <h1 class="titulo-pagina">SOS Mascotas</h1>
+      <p class="subtitulo-pagina">Encontrá a tu próximo compañero de aventuras</p>
+    </div>
+
+    <section class="filtro-container">
+      <div class="grupo-filtro">
+        <label for="filter-especie">Especie</label>
+        <select id="filter-especie" class="filtro-select">
+          <option value="">Todos</option>
+          <option value="Perro">Perros</option>
+          <option value="Gato">Gatos</option>
+        </select>
+      </div>
+      <div class="grupo-filtro">
+        <label for="filter-tamanio">Tamaño</label>
+        <select id="filter-tamanio" class="filtro-select">
+          <option value="">Todos</option>
+          <option value="Pequeño">Pequeño</option>
+          <option value="Mediano">Mediano</option>
+          <option value="Grande">Grande</option>
+        </select>
+      </div>
+      <button id="btn-buscar" class="btn-primary">Filtrar Mascotas</button>
+    </section>
+
+    <section id="muro-mascotas" class="grilla-mascotas">
+      </section>
+  </main>
+
+  <script src="muro.js"></script>
+</body>
+</html>

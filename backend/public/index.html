@@ -2,93 +2,66 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - SOS Mascotas</title>
-
-  <link rel="stylesheet" href="styles.css">
+  <title>SOS Mascotas - Bienvenidos</title>
+  <link rel="stylesheet" href="/styles-global.css">
+  <style>
+    /* Estilos de distribución espacial exclusivos para la Landing Page */
+    .hero-section {
+      max-width: 800px;
+      margin: 100px auto;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .hero-section h1 {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero-section p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+    .contenedor-botones {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+    .btn-landing {
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+  </style>
 </head>
-
 <body>
 
-  <div class="login-container">
+  <header>
+    <div class="logo">SOS Mascotas <span>🐾</span></div>
+    <ul class="nav-links">
+      <li><a href="/" class="active">Inicio</a></li>
+      <li><a href="/muro">Muro</a></li>
+      <li><a href="/donaciones">Donaciones</a></li>
+      <li><a href="/login">Ingresar</a></li>
+    </ul>
+  </header>
 
-    <div class="login-card">
-
-      <h1>SOS Mascotas 🐾</h1>
-
-      <p class="subtitle">
-        Iniciá sesión para continuar
-      </p>
-
-      <form id="loginForm">
-
-        <input 
-          type="email"
-          id="email"
-          placeholder="Correo electrónico"
-          required
-        >
-
-        <input 
-          type="password"
-          id="password"
-          placeholder="Contraseña"
-          required
-        >
-
-        <button type="submit">
-          Ingresar
-        </button>
-
-      </form>
-      <p class="switch-form">
-        ¿No tenés cuenta?
-        <span id="showRegister">
-        Registrate
-        </span>
-     </p>
-      <p id="message"></p>
-
-<form id="registerForm" style="display:none;">
-
-  <p class="subtitle">
-    ¿Ya tenés cuenta?
-    <a href="#" id="showLogin">
-      Iniciá sesión
-    </a>
-  </p>
-
-  <input
-    type="text"
-    id="registerName"
-    placeholder="Nombre"
-    required
-  >
-
-  <input
-    type="email"
-    id="registerEmail"
-    placeholder="Correo electrónico"
-    required
-  >
-
-  <input
-    type="password"
-    id="registerPassword"
-    placeholder="Contraseña"
-    required
-  >
-
-  <button type="submit">
-    Crear cuenta
-  </button>
-
-</form>
+  <main class="hero-section">
+    <h1>SOS Mascotas</h1>
+    <p>Conectando corazones solidarios con peluditos que buscan un hogar seguro y feliz.</p>
+    
+    <div class="contenedor-botones">
+      <a href="/muro" class="btn-landing btn-muro">Ver mascotas en adopción 🐾</a>
+      
+      <a href="/donaciones" class="btn-landing btn-apoyar">Apoyar al refugio ♥</a>
     </div>
-
-  </div>
-
-  <script src="app.js"></script>
+  </main>
 
 </body>
 </html>

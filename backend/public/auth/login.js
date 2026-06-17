@@ -210,7 +210,7 @@ async function renderGestionMascotas(usuario) {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/api/mascotas'
+      '/api/mascotas'
     );
 
     const mascotas = await response.json();
@@ -408,7 +408,7 @@ function renderCrearMascota(usuario) {
     try {
 
       const response = await fetch(
-        'http://localhost:3000/api/mascotas',
+        '/api/mascotas',
         {
 
           method: 'POST',
@@ -555,7 +555,7 @@ async function renderMatches(usuario) {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/api/mascotas'
+      '/api/mascotas'
     );
 
     const mascotas = await response.json();
@@ -732,7 +732,7 @@ loginForm.addEventListener('submit', async (event) => {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/api/usuarios/login',
+      '/api/usuarios/login',
       {
 
         method: 'POST',
@@ -807,7 +807,7 @@ registerForm.addEventListener('submit', async (event) => {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/api/usuarios/registrar',
+      '/api/usuarios/registrar',
       {
 
         method: 'POST',
