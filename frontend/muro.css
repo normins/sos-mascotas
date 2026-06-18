@@ -1,0 +1,86 @@
+/* Fondo general */
+body {
+  background-color: #0D0D0D;
+  color: #F4F4F4;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Contenedor */
+.muro-container {
+  padding: 20px;
+}
+
+/* Títulos */
+.titulo-pagina {
+  font-size: 32px;
+  margin: 0;
+}
+
+.subtitulo-pagina {
+  color: #A0A0A0;
+  margin-bottom: 20px;
+}
+
+/* FILTROS */
+.filtro-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filtro-select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+.btn-primary {
+  background: #304FFB;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #182062;
+}
+
+/* ✅ GRILLA (CLAVE) */
+.grilla-mascotas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+/* ✅ TARJETAS (GENÉRICO PARA LO QUE GENERE JS) */
+.grilla-mascotas > * {
+  background: #151515;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: transform 0.2s ease;
+}
+
+.grilla-mascotas > *:hover {
+  transform: translateY(-5px);
+}
+
+/* ✅ IMAGENES */
+.grilla-mascotas img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* ✅ TEXTO */
+.grilla-mascotas h3 {
+  margin: 10px;
+}
+
+.grilla-mascotas p {
+  margin: 10px;
+  color: #A0A0A0;
+}
