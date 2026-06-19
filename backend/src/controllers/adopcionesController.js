@@ -5,36 +5,41 @@ const registrarInteres = async (req, res) => {
     const { id_usuario, id_mascota } = req.body;
 
     try {
-        // 1. Registrar el interés en la tabla intermedia (RF09)
+        // 1: Registrar el interés en la tabla intermedia (RF09)
+        // Usamos campos estructurales: usuario_id y mascota_id
         const nuevoInteres = await pool.query(
-            'INSERT INTO intereses (id_usuario, id_mascota) VALUES ($1, $2) RETURNING *',
+            'INSERT INTO interes (usuario_id, mascota_id) VALUES ($1, $2) RETURNING *',
             [id_usuario, id_mascota]
         );
+        
+        // Obtenemos el ID del interés que se acaba de generar en Postgres
+        const interesId = nuevoInteres.rows[0].id;
 
-        // 2. Lógica de Match Automático (RF11): 
-        // Por ahora, simulamos que si el usuario tiene perfil completo, se genera el Match.
-        // En una próxima etapa podemos cruzar los requisitos reales.
+        // 2: Lógica de Match Automático (RF11)
         const nuevoMatch = await pool.query(
-            'INSERT INTO matches (id_usuario, id_mascota, estado) VALUES ($1, $2, $3) RETURNING *',
-            [id_usuario, id_mascota, 'Valido']
+            'INSERT INTO "match" (interes_id, estado) VALUES ($1, $2) RETURNING *',
+            [interesId, 'Valido']
         );
+        
+        // Obtenemos el ID del match generado
+        const matchId = nuevoMatch.rows[0].id;
 
-        // 3. Dejar la Solicitud generada lista para que la revise el Admin (RF14)
+        // 3: Generar la Solicitud vinculada al Match (RF14)
         const nuevaSolicitud = await pool.query(
-            'INSERT INTO solicitudes_adopcion (id_usuario, id_mascota, estado) VALUES ($1, $2, $3) RETURNING *',
-            [id_usuario, id_mascota, 'Pendiente']
+            'INSERT INTO solicitud_adopcion (usuario_id, mascota_id, match_id, estado) VALUES ($1, $2, $3, $4) RETURNING *',
+            [id_usuario, id_mascota, matchId, 'Pendiente']
         );
 
         res.status(201).json({
-            mensaje: "¡Match generado con éxito!",
+            mensaje: "¡Match y Solicitud formal generados con éxito en la base real!",
             interes: nuevoInteres.rows[0],
             match: nuevoMatch.rows[0],
             solicitud: nuevaSolicitud.rows[0]
         });
 
     } catch (error) {
-        console.error("Error en el proceso de adopción:", error);
-        res.status(500).json({ error: "Error al procesar la postulación" });
+        console.error("Error en el proceso de adopción relacional:", error);
+        res.status(500).json({ error: "Error al procesar la postulación en la base de datos" });
     }
 };
 
@@ -44,10 +49,10 @@ const obtenerPostulacionesUsuario = async (req, res) => {
     try {
         // Trae las solicitudes del usuario cruzando los datos con la tabla de mascotas (JOIN)
         const resultado = await pool.query(
-            `SELECT s.id_solicitud, s.estado, s.fecha, m.nombre, m.especie, m.sexo 
-             FROM solicitudes_adopcion s
-             JOIN mascotas m ON s.id_mascota = m.id_mascota
-             WHERE s.id_usuario = $1`,
+            `SELECT s.id, s.estado, s.fecha, m.nombre, m.especie, m.sexo 
+             FROM solicitud_adopcion s
+             JOIN mascota m ON s.mascota_id = m.id
+             WHERE s.usuario_id = $1`,
             [id_usuario]
         );
 

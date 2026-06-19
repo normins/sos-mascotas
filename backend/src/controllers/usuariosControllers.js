@@ -42,7 +42,7 @@ exports.registrarUsuario = async (req, res, next) => {
       }
 
       const nuevoUsuario = { 
-        id_usuario: usuariosMock.length + 1, 
+        id: usuariosMock.length + 1, 
         nombre, 
         email: emailFormat, 
         password: passwordHash,

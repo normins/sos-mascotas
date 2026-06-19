@@ -8,7 +8,7 @@ let adopcionesMock = global.adopcionesCompartidas || [];
 // .............................................................
 exports.obtenerMascotas = async (req, res, next) => {
   try {
-    // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&tamanio=...)
+    // Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&tamanio=...)
     const { especie, sexo } = req.query;
 
     // Comportamiento en modo simulador 
@@ -40,7 +40,7 @@ exports.obtenerMascotas = async (req, res, next) => {
     // ..........................................
     //  Comportamiento en base de datos real 
     // ..........................................
-    let queryTexto = 'SELECT * FROM mascotas WHERE 1=1';
+    let queryTexto = 'SELECT * FROM mascota WHERE 1=1';
     const queryValores = [];
     let contadorParametros = 1;
 
@@ -57,7 +57,7 @@ exports.obtenerMascotas = async (req, res, next) => {
     }
     
     // Ordenar para que las últimas cargadas aparezcan primero
-    queryTexto += ' ORDER BY id_mascota DESC';
+    queryTexto += ' ORDER BY id DESC';
 
     const { rows } = await db.query(queryTexto, queryValores);
     
@@ -102,7 +102,7 @@ exports.crearMascota = async (req, res, next) => {
     }
 
     const queryTexto = `
-      INSERT INTO mascotas
+      INSERT INTO mascota
       (nombre, especie, sexo, estado)
       VALUES ($1, $2, $3, $4)
       RETURNING *
@@ -173,16 +173,16 @@ exports.solicitarAdopcion = async (req, res, next) => {
       });
     }
 
-    // Base de datos real (Dejamos escrita la consulta lista para el futuro)
+    // Base de datos real
     // 1. Verificar primero si la mascota existe en PostgreSQL
-    const checkMascota = await db.query('SELECT id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
+    const checkMascota = await db.query('SELECT id, nombre FROM mascota WHERE id = $1', [mascotaId]);
     if (checkMascota.rows.length === 0) {
       return res.status(404).json({ error: "La mascota real indicada no existe en la Base de Datos." });
     }
 
     // 2. Insertar la solicitud en la tabla de adopciones
     const queryInsert = `
-      INSERT INTO adopciones (id_mascota, id_usuario, mensaje, estado) 
+      INSERT INTO solicitud_adopcion (mascota_id, usuario_id, mensaje, estado) 
       VALUES ($1, $2, $3, $4) 
       RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
     `;
@@ -241,10 +241,10 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
     
     // Comportamiento en base de datos real (actualizamos el estado en la tabla de adopciones de PostgreSQL)
     const queryUpdate = `
-      UPDATE adopciones 
+      UPDATE solicitud_adopcion 
       SET estado = $1 
       WHERE id = $2 
-      RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
+      RETURNING id, mascota_id, usuario_id, mensaje, estado, fecha_creacion
     `;
     
     const { rows } = await db.query(queryUpdate, [nuevo_estado, solicitudId]);
@@ -303,10 +303,10 @@ exports.cancelarAdopcion = async (req, res, next) => {
     // En la base de datos real aplicamos la misma lógica (un UPDATE de estado)
     // Vamos por la opción de actualizar estado a 'Cancelada' para no perder historial de auditoría:
     const queryDelete = `
-      UPDATE adopciones 
+      UPDATE solicitud_adopcion 
       SET estado = 'Cancelada' 
       WHERE id = $1 
-      RETURNING id, id_mascota, id_usuario, estado
+      RETURNING id, mascota_id, usuario_id, estado
     `;
     
     const { rows } = await db.query(queryDelete, [solicitudId]);
@@ -350,8 +350,8 @@ exports.obtenerTodasLasAdopciones = async (req, res, next) => {
     // COMPORTAMIENTO EN BASE DE DATOS REAL
     // ..........................................
     const queryReal = `
-      SELECT id, id_mascota as "mascotaId", id_usuario as "usuarioId", mensaje, estado, fecha_creacion
-      FROM solicitudes_adopcion
+      SELECT id, mascota_id as "mascotaId", usuario_id as "usuarioId", mensaje, estado, fecha_creacion
+      FROM solicitud_adopcion
       ORDER BY fecha_creacion DESC
     `;
     const { rows } = await db.query(queryReal);
