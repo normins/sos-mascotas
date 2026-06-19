@@ -1,15 +1,9 @@
 const loginForm = document.getElementById('loginForm');
-
 const registerForm = document.getElementById('registerForm');
-
 const message = document.getElementById('message');
-
 const showRegister = document.getElementById('showRegister');
-const showLogin =
-  document.getElementById('showLogin');
-
-const loginContainer =
-  document.querySelector('.login-card');
+const showLogin = document.getElementById('showLogin');
+const loginContainer = document.querySelector('.login-card');
 
 showRegister.addEventListener('click', () => {
 
@@ -33,174 +27,107 @@ showLogin.addEventListener('click', () => {
 
 
 function renderPerfilForm(usuario) {
-
-  const perfilGuardado =
-    JSON.parse(
-      localStorage.getItem(
-        `perfilAdopcion_${usuario.email}`
-      )
-    ) || {};
+  // Buscamos si ya existen datos guardados para este usuario específico
+  const perfilGuardado = JSON.parse(localStorage.getItem(`perfilAdopcion_${usuario.email}`)) || {};
 
   loginContainer.innerHTML = `
-
     <h1>Preferencias de adopción</h1>
-
-    <p class="welcome-text">
-      Revisá o actualizá tus preferencias
-    </p>
+    <p class="welcome-text">Revisá o actualizá tus preferencias para el Match automático</p>
 
     <form id="perfilForm">
-
-      <select id="tipoMascota" required>
-
-        <option value="">
-          Tipo de mascota
-        </option>
-
-        <option
-          value="Perro"
-          ${perfilGuardado.tipoMascota === 'Perro'
-      ? 'selected'
-      : ''}
-        >
-          Perro
-        </option>
-
-        <option
-          value="Gato"
-          ${perfilGuardado.tipoMascota === 'Gato'
-      ? 'selected'
-      : ''}
-        >
-          Gato
-        </option>
-
+      
+      <label for="tipoVivienda" style="font-size: 14px; color: #bbb; margin-top: 10px;">Tipo de Vivienda:</label>
+      <select id="tipoVivienda" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Casa" ${perfilGuardado.tipoVivienda === 'Casa' ? 'selected' : ''}>Casa</option>
+        <option value="Departamento" ${perfilGuardado.tipoVivienda === 'Departamento' ? 'selected' : ''}>Departamento</option>
+        <option value="PH" ${perfilGuardado.tipoVivienda === 'PH' ? 'selected' : ''}>PH</option>
       </select>
 
-      <select id="tamanioPreferido" required>
-
-        <option value="">
-          Tamaño preferido
-        </option>
-
-        <option
-          value="Pequeño"
-          ${perfilGuardado.tamanio === 'Pequeño'
-      ? 'selected'
-      : ''}
-        >
-          Pequeño
-        </option>
-
-        <option
-          value="Mediano"
-          ${perfilGuardado.tamanio === 'Mediano'
-      ? 'selected'
-      : ''}
-        >
-          Mediano
-        </option>
-
-        <option
-          value="Grande"
-          ${perfilGuardado.tamanio === 'Grande'
-      ? 'selected'
-      : ''}
-        >
-          Grande
-        </option>
-
+      <label for="tienePatio" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Tiene patio/balcón seguro?</label>
+      <select id="tienePatio" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sí" ${perfilGuardado.tienePatio === 'Sí' ? 'selected' : ''}>Sí</option>
+        <option value="No" ${perfilGuardado.tienePatio === 'No' ? 'selected' : ''}>No</option>
       </select>
 
-      <select id="patio" required>
-
-        <option value="">
-          ¿Tenés patio?
-        </option>
-
-        <option
-          value="Sí"
-          ${perfilGuardado.patio === 'Sí'
-      ? 'selected'
-      : ''}
-        >
-          Sí
-        </option>
-
-        <option
-          value="No"
-          ${perfilGuardado.patio === 'No'
-      ? 'selected'
-      : ''}
-        >
-          No
-        </option>
-
+      <label for="experiencia" style="font-size: 14px; color: #bbb; margin-top: 10px;">Experiencia previa con animales:</label>
+      <select id="experiencia" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sin experiencia" ${perfilGuardado.experiencia === 'Sin experiencia' ? 'selected' : ''}>Sin experiencia</option>
+        <option value="Principiante" ${perfilGuardado.experiencia === 'Principiante' ? 'selected' : ''}>Principiante (Tuve alguna vez)</option>
+        <option value="Avanzado" ${perfilGuardado.experiencia === 'Avanzado' ? 'selected' : ''}>Avanzado (Tengo conocimiento/Fui transitante)</option>
       </select>
 
-      <textarea
-        id="descripcionUsuario"
-        placeholder="Contanos un poco sobre vos"
-      >${perfilGuardado.descripcion || ''}</textarea>
+      <label for="otrasMascotas" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Convive con otros animales actualmente?</label>
+      <select id="otrasMascotas" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sí" ${perfilGuardado.otrasMascotas === 'Sí' ? 'selected' : ''}>Sí</option>
+        <option value="No" ${perfilGuardado.otrasMascotas === 'No' ? 'selected' : ''}>No</option>
+      </select>
 
-      <button type="submit">
-        Guardar preferencias
-      </button>
+      <label for="preferenciaTamano" style="font-size: 14px; color: #bbb; margin-top: 10px;">Preferencia de tamaño de la mascota:</label>
+      <select id="preferenciaTamano" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Pequeño" ${perfilGuardado.preferenciaTamano === 'Pequeño' ? 'selected' : ''}>Pequeño</option>
+        <option value="Mediano" ${perfilGuardado.preferenciaTamano === 'Mediano' ? 'selected' : ''}>Mediano</option>
+        <option value="Grande" ${perfilGuardado.preferenciaTamano === 'Grande' ? 'selected' : ''}>Grande</option>
+      </select>
 
-      <button
-        type="button"
-        id="volverPerfilBtn"
-      >
-        Volver
-      </button>
-
+      <button type="submit" style="margin-top: 20px;">Guardar preferencias</button>
+      <button type="button" id="volverPerfilBtn">Volver</button>
     </form>
-
   `;
 
-  const perfilForm =
-    document.getElementById('perfilForm');
-
+  // Listener para capturar el envío del nuevo set de datos
+  const perfilForm = document.getElementById('perfilForm');
   perfilForm.addEventListener('submit', (event) => {
-
     event.preventDefault();
 
-    const perfil = {
-
-      tipoMascota:
-        document.getElementById('tipoMascota').value,
-
-      tamanio:
-        document.getElementById('tamanioPreferido').value,
-
-      patio:
-        document.getElementById('patio').value,
-
-      descripcion:
-        document.getElementById(
-          'descripcionUsuario'
-        ).value
-
+    const perfilData = {
+      id_usuario: usuario.id_usuario || usuario.id || 1, // Sincroniza con el ID proveniente de PostgreSQL
+      tipoVivienda: document.getElementById('tipoVivienda').value,
+      tienePatio: document.getElementById('tienePatio').value,
+      experiencia: document.getElementById('experiencia').value,
+      otrasMascotas: document.getElementById('otrasMascotas').value,
+      preferenciaTamano: document.getElementById('preferenciaTamano').value
     };
 
-    localStorage.setItem(
-      `perfilAdopcion_${usuario.email}`,
-      JSON.stringify(perfil)
-    );
+    console.log(" Enviando preferencias al servidor...", perfilData);
 
-
+    //  Conexión por red hacia Express
+    fetch('/api/usuarios/perfil', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(perfilData)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error en la respuesta del servidor');
+      return response.json();
+    })
+    .then(resultado => {
+      console.log("Servidor respondió con éxito:", resultado);
+      
+      // Resguardo local para persistencia inmediata de la interfaz
+      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
+      
+      alert(`¡Preferencias sincronizadas con el servidor! 🐾\n${resultado.mensaje}`);
+      renderAdoptantePanel(usuario);
+    })
+    .catch(error => {
+      console.error("Falló el guardado en el backend, aplicando respaldo local:", error);
+      alert("No se pudo conectar con el servidor temporalmente, pero tus cambios se guardaron localmente por seguridad.");
+      
+      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
     renderAdoptantePanel(usuario);
-
+    });
   });
 
-  document
-    .getElementById('volverPerfilBtn')
-    .addEventListener('click', () => {
-
-      renderAdoptantePanel(usuario);
-
-    });
-
+  document.getElementById('volverPerfilBtn').addEventListener('click', () => {
+    renderAdoptantePanel(usuario);
+  });
 }
 
 
@@ -209,7 +136,7 @@ async function renderGestionMascotas(usuario) {
 
   try {
 
-    const response = await fetch('/api/mascotas'
+    const response = await fetch('http://localhost:3000/api/mascotas'
     );
 
     let mascotas = await response.json();
@@ -243,16 +170,16 @@ async function renderGestionMascotas(usuario) {
           <div class="mascota-card">
 
             <img
-    src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
-    class="mascota-img"
-  >
+              src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
+              class="mascota-img"
+            >
             <h3>${mascota.nombre}</h3>
 
             <p>${mascota.especie}</p>
 
             <p>${mascota.sexo}</p>
 
-            <p>${mascota.tamanio}</p>
+            <p>${mascota.tamanio || mascota.raza || 'Mediano'}</p>
 
             <button
               class="inactive-btn"
@@ -413,7 +340,7 @@ function renderCrearMascota(usuario) {
     try {
 
       const response = await fetch(
-        '/api/mascotas',
+        'http://localhost:3000/api/mascotas',
         {
 
           method: 'POST',
@@ -524,6 +451,10 @@ function renderAdoptantePanel(usuario) {
         Ver matches
       </button>
 
+      <button id="irInicioBtn" style="background-color: #2e7d32; color: white;">
+        Ver Mascotas (Inicio) 🐾
+      </button>
+
       <button id="logoutBtn">
         Cerrar sesión
       </button>
@@ -548,6 +479,13 @@ function renderAdoptantePanel(usuario) {
 
     });
 
+    document
+      .getElementById('irInicioBtn')
+      .addEventListener('click', () => {
+        window.location.href = "../index.html";
+    });
+
+
   document
     .getElementById('logoutBtn')
     .addEventListener('click', logout);
@@ -560,7 +498,7 @@ async function renderMatches(usuario) {
   try {
 
     const response = await fetch(
-      '/api/mascotas'
+      'http://localhost:3000/api/mascotas'
     );
 
     const mascotas = await response.json();
@@ -608,64 +546,49 @@ async function renderMatches(usuario) {
             class="match-img"
           >
 
-<div class="match-info">
 
-  <h2>${mascota.nombre}</h2>
-
-  <p>
-    ${mascota.especie} • ${mascota.sexo}
-  </p>
-
-  <p>
-    ${mascota.tamanio}
-  </p>
-
-  <p>
-    ${mascota.edad_estimada}
-  </p>
-
-  <p>
-    ${mascota.ubicacion}
-  </p>
-
-  <p>
-    ${mascota.descripcion}
-  </p>
-
-  <p>
-    <strong>Requisitos:</strong>
-    ${mascota.requisitos_adopcion}
-  </p>
-
-</div>
+          <div class="match-info">
+            <h2>${mascota.nombre || 'Sin nombre'}</h2>
+            <p>
+              ${mascota.especie || 'No especificada'} • ${mascota.sexo || 'No especificado'}
+            </p>
+            <p>
+              <strong>Raza:</strong> ${mascota.raza || 'Mezcla'}  </p>
+            <p>
+              <strong>Edad:</strong> ${mascota.edad || 'N/A'} meses </p>
+            <p>
+              <strong>Estado:</strong> ${mascota.estado || 'Disponible'}
+            </p>
+            <p>
+              ${mascota.descripcion || 'Sin descripción'}
+            </p>
+          </div>
 
 
 
-<div class="match-buttons">
+          <div class="match-buttons">
 
-  <button
-    id="rejectBtn"
-    class="reject-btn"
-  >
-    ✖
-  </button>
+            <button
+              id="rejectBtn"
+              class="reject-btn"
+            >
+              ✖
+            </button>
 
-  <button
-    id="likeBtn"
-    class="like-btn"
-  >
-    ❤
-  </button>
+            <button
+              id="likeBtn"
+              class="like-btn"
+            >
+              ❤
+            </button>
 
-  <button
-    id="volverMatchesBtn"
-  >
-    Volver
-  </button>
+            <button
+              id="volverMatchesBtn"
+            >
+              Volver
+            </button>
 
-</div>
-
-
+          </div>
 
         </div>
 
@@ -681,24 +604,44 @@ async function renderMatches(usuario) {
 
         });
 
-document
-  .getElementById('volverMatchesBtn')
-  .addEventListener('click', () => {
+      document
+        .getElementById('volverMatchesBtn')
+        .addEventListener('click', () => {
 
-    renderAdoptantePanel(usuario);
+          renderAdoptantePanel(usuario);
 
-  });
-
-
+        });
 
       document
         .getElementById('likeBtn')
-        .addEventListener('click', () => {
+        .addEventListener('click', async () => {
+          try {
+            // Enviamos el id_usuario (que viene del login) y el id_mascota actual de PostgreSQL
+            const postularResponse = await fetch('http://localhost:3000/api/adopciones/postular', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                id_usuario: usuario.id_usuario,
+                id_mascota: mascota.id_mascota
+              })
+            });
 
-          currentIndex++;
+            const data = await postularResponse.json();
 
-          renderCard();
+            if (postularResponse.ok) {
+              alert(`¡Postulación exitosa para ${mascota.nombre}! `);
+              currentIndex++;
+              renderCard();
+            } else {
+              alert(`Error: ${data.error || 'No se pudo registrar la postulación'}`);
+            }
 
+          } catch (error) {
+            console.error("Error al enviar la postulación:", error);
+            alert("Error de red al intentar postularse.");
+          }
         });
 
     }
@@ -715,12 +658,11 @@ document
 
 }
 
-
 function logout() {
 
   localStorage.removeItem('usuario');
-
-  location.reload();
+  alert("Sesión cerrada correctamente. ¡Hasta luego! 🐾");
+  window.location.href = "../index.html";
 
 }
 
@@ -736,21 +678,11 @@ loginForm.addEventListener('submit', async (event) => {
 
   try {
 
-    const response = await fetch(
-      '/api/usuarios/login',
+    const response = await fetch('http://localhost:3000/api/usuarios/login',
       {
-
         method: 'POST',
-
-        headers: {
-          'Content-Type': 'application/json'
-        },
-
-        body: JSON.stringify({
-          email,
-          password
-        })
-
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
       }
     );
 
@@ -812,7 +744,7 @@ registerForm.addEventListener('submit', async (event) => {
   try {
 
     const response = await fetch(
-      '/api/usuarios/registrar',
+      'http://localhost:3000/api/usuarios/registrar',
       {
 
         method: 'POST',

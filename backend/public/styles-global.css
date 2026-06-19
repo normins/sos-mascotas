@@ -1,98 +1,111 @@
-/* ==================================================================
-   VARIABLES Y ESTILOS BASE (PALETA OFICIAL DE LA APLICACIÓN)
-   ================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #0D0D0D;               /* Fondo general ultra oscuro */
-  --card: #151515;             /* Tarjetas y contenedores */
-  --text: #F4F4F4;             /* Texto principal blanco */
-  --text-secondary: #A0A0A0;   /* Texto secundario gris */
-  --primary: #304FFB;          /* Azul eléctrico oficial */
-  --primary-dark: #182062;     /* Sombra azul/Hover */
-  --error: #FF6B57;            /* Rojo coral para alertas */
-  --accent: #FF7A1A;           /* Naranja para íconos de huellas */
-  
-  /* Definición de variables para el acento de donaciones */
-  --rosa-acento: #FF6B8B;      
-  --rosa-dark: #5A1E2B;
+  --bg: #0D0D0D;
+  --card: #151515;
+  --text: #F4F4F4;
+  --text-secondary: #A0A0A0;
+  --primary: #304FFB;
+  --primary-dark: #182062;
+  --error: #FF6B57;
+  --accent: #FF7A1A;
+  --rosa-acento: #FF6B8B;
 }
 
+/* RESET */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
+/* BODY */
 body {
   background-color: var(--bg);
   color: var(--text);
   font-family: 'Inter', sans-serif;
 }
 
+/* HEADER */
 header {
   background-color: var(--card);
-  border-bottom: 1px solid #222;
   padding: 20px 40px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .logo {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.logo span {
-  color: var(--accent);
+  font-weight: bold;
+  font-size: 20px;
 }
 
 .nav-links {
   display: flex;
-  gap: 25px;
+  gap: 20px;
   list-style: none;
 }
 
 .nav-links a {
-  text-decoration: none;
   color: var(--text-secondary);
-  font-weight: 500;
-  transition: color 0.3s ease;
+  text-decoration: none;
 }
 
-.nav-links a:hover, .nav-links a.active {
+.nav-links a:hover,
+.nav-links .active {
   color: var(--primary);
 }
 
+/* BOTONES */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+}
 
-/* ==================================================================
-   ESTILOS COMPARTIDOS E INTERACTIVIDAD DE BOTONES EN LANDING PAGE
-   ================================================================== */
+/* LANDING */
+.hero-section {
+  text-align: center;
+  margin-top: 80px;
+}
 
-/* Estado base común: Fondo oscuro y borde sutil para ambos botones */
-.btn-muro, .btn-apoyar {
-  background-color: #1A1A1A;
-  color: var(--text-secondary);
+/* GRID BOTONES */
+.contenedor-botones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 500px;
+  margin: 40px auto;
+}
+
+.btn-landing {
+  padding: 20px;
+  border-radius: 12px;
+  background-color: var(--card);
   border: 1px solid #333;
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  transition: 0.3s;
 }
 
-/* Transición de estados al retirar el puntero del mouse */
-.btn-muro:hover, .btn-apoyar:hover {
-  color: #FFFFFF;
-  transform: translateY(-2px);
-}
-
-/* 1. Transición de estado interactivo: Botón Muro de Mascotas (Azul Eléctrico) */
+/* HOVERS */
 .btn-muro:hover {
   background-color: var(--primary);
-  border-color: var(--primary);
-  box-shadow: 0 0 20px var(--primary-dark);
 }
 
-/* 2. Transición de estado interactivo: Botón Apoyar al Refugio (Rosa) */
 .btn-apoyar:hover {
   background-color: var(--rosa-acento);
-  border-color: var(--rosa-acento);
   box-shadow: 0 0 20px rgba(255, 107, 139, 0.4);
+}
+
+.btn-match:hover {
+  background-color: #FF2E63;
+  box-shadow: 0 0 20px rgba(255, 46, 99, 0.4);
+}
+
+.btn-voluntarios:hover {
+  background-color: #00BFA6;
+  box-shadow: 0 0 20px rgba(0, 191, 166, 0.4);
 }
