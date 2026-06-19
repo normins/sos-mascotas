@@ -5,7 +5,7 @@ const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
   database: 'sos_mascotas',
-  password: 'postgres2026',
+  password: 'Mushu',
   port: 5432,
 });
 
@@ -26,8 +26,8 @@ const initialize = async () => {
     
     console.log(`
 ==================================================================
-✨ [EpicaSoft]: ¡CONEXIÓN EXITOSA CON POSTGRESQL REAL!
-📦 Base de datos "sos_mascotas" conectada en el puerto 5432
+ [EpicaSoft]: ¡CONEXIÓN EXITOSA CON POSTGRESQL REAL!
+ Base de datos "sos_mascotas" conectada en el puerto 5432
 ==================================================================
 `);
 
@@ -38,8 +38,8 @@ const initialize = async () => {
     usandoSimulador = true;
     console.log(`
 ==================================================================
-⚠️ [AVISO]: Hubo un problema al conectar a la base física
-🧪 El sistema cayó en MODO SIMULADOR
+ [AVISO]: Hubo un problema al conectar a la base física
+ El sistema cayó en MODO SIMULADOR
 ==================================================================
 `);
     console.error('Detalle técnico del error:', err.message);

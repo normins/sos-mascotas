@@ -7,7 +7,7 @@ const asegurarBaseDeDatosExiste = async () => {
   const poolTemporal = new Pool({
     user: 'postgres',
     host: 'localhost',
-    password: 'postgres2026',
+    password: 'Mushu',
     port: 5432,
     database: 'postgres', // Base de datos por defecto para poder conectarnos
   });
@@ -22,14 +22,14 @@ const asegurarBaseDeDatosExiste = async () => {
     );
 
     if (res.rowCount === 0) {
-      console.log(`\n⚠️ La base de datos "${dbName}" no existe. Creándola...`);
+      console.log(`\n La base de datos "${dbName}" no existe. Creándola...`);
       await poolTemporal.query(`CREATE DATABASE ${dbName}`);
-      console.log(`✅ Base de datos "${dbName}" creada con éxito.`);
+      console.log(` Base de datos "${dbName}" creada con éxito.`);
     } else {
-      console.log(`\n🔹 La base de datos "${dbName}" ya existe.`);
+      console.log(`\n La base de datos "${dbName}" ya existe.`);
     }
   } catch (err) {
-    console.error('❌ Error al verificar/crear la base de datos:', err.message);
+    console.error(' Error al verificar/crear la base de datos:', err.message);
     throw err;
   } finally {
     // Cerramos la conexión temporal obligatoriamente
@@ -42,7 +42,7 @@ const crearTablasAutomaticamente = async (pool) => {
     // --- NUEVO: Ejecutamos la verificación/creación de la BD antes de las tablas ---
     await asegurarBaseDeDatosExiste();
 
-    console.log('\n🔧 [InitDB] Verificando e inicializando estructura de base de datos...\n');
+    console.log('\n [InitDB] Verificando e inicializando estructura de base de datos...\n');
 
     // Array de queries en orden (respetando dependencias de FK)
     const queries = [
@@ -190,17 +190,17 @@ const crearTablasAutomaticamente = async (pool) => {
       try {
         await pool.query(queries[i]);
         const numeroTabla = i + 1;
-        console.log(`✅ Tabla ${numeroTabla}/14 verificada/creada`);
+        console.log(` Tabla ${numeroTabla}/14 verificada/creada`);
       } catch (err) {
-        console.error(`❌ Error en query ${i + 1}:`, err.message);
+        console.error(` Error en query ${i + 1}:`, err.message);
         throw err;
       }
     }
 
     console.log(`
 ==================================================================
-✨ [InitDB] ¡Base de datos inicializada exitosamente!
-📦 Todas las 14 tablas y relaciones están listas
+ [InitDB] ¡Base de datos inicializada exitosamente!
+ Todas las 14 tablas y relaciones están listas
 ==================================================================
     `);
 
@@ -212,7 +212,7 @@ const crearTablasAutomaticamente = async (pool) => {
   } catch (err) {
     console.error(`
 ==================================================================
-❌ [InitDB] Error durante la inicialización de la BD
+ [InitDB] Error durante la inicialización de la BD
 Detalle: ${err.message}
 Sistema continuará en MODO SIMULADOR
 ==================================================================
