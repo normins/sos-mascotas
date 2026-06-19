@@ -27,174 +27,81 @@ showLogin.addEventListener('click', () => {
 
 
 function renderPerfilForm(usuario) {
-
-  const perfilGuardado =
-    JSON.parse(
-      localStorage.getItem(
-        `perfilAdopcion_${usuario.email}`
-      )
-    ) || {};
+  // Buscamos si ya existen datos guardados para este usuario específico
+  const perfilGuardado = JSON.parse(localStorage.getItem(`perfilAdopcion_${usuario.email}`)) || {};
 
   loginContainer.innerHTML = `
-
     <h1>Preferencias de adopción</h1>
-
-    <p class="welcome-text">
-      Revisá o actualizá tus preferencias
-    </p>
+    <p class="welcome-text">Revisá o actualizá tus preferencias para el Match automático</p>
 
     <form id="perfilForm">
-
-      <select id="tipoMascota" required>
-
-        <option value="">
-          Tipo de mascota
-        </option>
-
-        <option
-          value="Perro"
-          ${perfilGuardado.tipoMascota === 'Perro'
-      ? 'selected'
-      : ''}
-        >
-          Perro
-        </option>
-
-        <option
-          value="Gato"
-          ${perfilGuardado.tipoMascota === 'Gato'
-      ? 'selected'
-      : ''}
-        >
-          Gato
-        </option>
-
+      
+      <label for="tipoVivienda" style="font-size: 14px; color: #bbb; margin-top: 10px;">Tipo de Vivienda:</label>
+      <select id="tipoVivienda" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Casa" ${perfilGuardado.tipoVivienda === 'Casa' ? 'selected' : ''}>Casa</option>
+        <option value="Departamento" ${perfilGuardado.tipoVivienda === 'Departamento' ? 'selected' : ''}>Departamento</option>
+        <option value="PH" ${perfilGuardado.tipoVivienda === 'PH' ? 'selected' : ''}>PH</option>
       </select>
 
-      <select id="tamanioPreferido" required>
-
-        <option value="">
-          Tamaño preferido
-        </option>
-
-        <option
-          value="Pequeño"
-          ${perfilGuardado.tamanio === 'Pequeño'
-      ? 'selected'
-      : ''}
-        >
-          Pequeño
-        </option>
-
-        <option
-          value="Mediano"
-          ${perfilGuardado.tamanio === 'Mediano'
-      ? 'selected'
-      : ''}
-        >
-          Mediano
-        </option>
-
-        <option
-          value="Grande"
-          ${perfilGuardado.tamanio === 'Grande'
-      ? 'selected'
-      : ''}
-        >
-          Grande
-        </option>
-
+      <label for="tienePatio" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Tiene patio/balcón seguro?</label>
+      <select id="tienePatio" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sí" ${perfilGuardado.tienePatio === 'Sí' ? 'selected' : ''}>Sí</option>
+        <option value="No" ${perfilGuardado.tienePatio === 'No' ? 'selected' : ''}>No</option>
       </select>
 
-      <select id="patio" required>
-
-        <option value="">
-          ¿Tenés patio?
-        </option>
-
-        <option
-          value="Sí"
-          ${perfilGuardado.patio === 'Sí'
-      ? 'selected'
-      : ''}
-        >
-          Sí
-        </option>
-
-        <option
-          value="No"
-          ${perfilGuardado.patio === 'No'
-      ? 'selected'
-      : ''}
-        >
-          No
-        </option>
-
+      <label for="experiencia" style="font-size: 14px; color: #bbb; margin-top: 10px;">Experiencia previa con animales:</label>
+      <select id="experiencia" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sin experiencia" ${perfilGuardado.experiencia === 'Sin experiencia' ? 'selected' : ''}>Sin experiencia</option>
+        <option value="Principiante" ${perfilGuardado.experiencia === 'Principiante' ? 'selected' : ''}>Principiante (Tuve alguna vez)</option>
+        <option value="Avanzado" ${perfilGuardado.experiencia === 'Avanzado' ? 'selected' : ''}>Avanzado (Tengo conocimiento/Fui transitante)</option>
       </select>
 
-      <textarea
-        id="descripcionUsuario"
-        placeholder="Contanos un poco sobre vos"
-      >${perfilGuardado.descripcion || ''}</textarea>
+      <label for="otrasMascotas" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Convive con otros animales actualmente?</label>
+      <select id="otrasMascotas" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Sí" ${perfilGuardado.otrasMascotas === 'Sí' ? 'selected' : ''}>Sí</option>
+        <option value="No" ${perfilGuardado.otrasMascotas === 'No' ? 'selected' : ''}>No</option>
+      </select>
 
-      <button type="submit">
-        Guardar preferencias
-      </button>
+      <label for="preferenciaTamano" style="font-size: 14px; color: #bbb; margin-top: 10px;">Preferencia de tamaño de la mascota:</label>
+      <select id="preferenciaTamano" required style="margin-top: 5px;">
+        <option value="">Seleccione una opción</option>
+        <option value="Pequeño" ${perfilGuardado.preferenciaTamano === 'Pequeño' ? 'selected' : ''}>Pequeño</option>
+        <option value="Mediano" ${perfilGuardado.preferenciaTamano === 'Mediano' ? 'selected' : ''}>Mediano</option>
+        <option value="Grande" ${perfilGuardado.preferenciaTamano === 'Grande' ? 'selected' : ''}>Grande</option>
+      </select>
 
-      <button
-        type="button"
-        id="volverPerfilBtn"
-      >
-        Volver
-      </button>
-
+      <button type="submit" style="margin-top: 20px;">Guardar preferencias</button>
+      <button type="button" id="volverPerfilBtn">Volver</button>
     </form>
-
   `;
 
-  const perfilForm =
-    document.getElementById('perfilForm');
-
+  // Listener para capturar el envío del nuevo set de datos
+  const perfilForm = document.getElementById('perfilForm');
   perfilForm.addEventListener('submit', (event) => {
-
     event.preventDefault();
 
     const perfil = {
-
-      tipoMascota:
-        document.getElementById('tipoMascota').value,
-
-      tamanio:
-        document.getElementById('tamanioPreferido').value,
-
-      patio:
-        document.getElementById('patio').value,
-
-      descripcion:
-        document.getElementById(
-          'descripcionUsuario'
-        ).value
-
+      tipoVivienda: document.getElementById('tipoVivienda').value,
+      tienePatio: document.getElementById('tienePatio').value,
+      experiencia: document.getElementById('experiencia').value,
+      otrasMascotas: document.getElementById('otrasMascotas').value,
+      preferenciaTamano: document.getElementById('preferenciaTamano').value
     };
 
-    localStorage.setItem(
-      `perfilAdopcion_${usuario.email}`,
-      JSON.stringify(perfil)
-    );
-
-
+    // Guardamos transitoriamente en LocalStorage manteniendo la estructura limpia
+    localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfil));
+    
+    alert("Preferencias de perfil actualizadas localmente. Listas para sincronizar con la base de datos 🐾");
     renderAdoptantePanel(usuario);
-
   });
 
-  document
-    .getElementById('volverPerfilBtn')
-    .addEventListener('click', () => {
-
-      renderAdoptantePanel(usuario);
-
-    });
-
+  document.getElementById('volverPerfilBtn').addEventListener('click', () => {
+    renderAdoptantePanel(usuario);
+  });
 }
 
 

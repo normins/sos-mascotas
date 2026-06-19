@@ -15,9 +15,10 @@ body {
 
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 60px;
 
-  margin-top: 20px;
+  margin: 0 auto;
 }
 
 .login-card {
