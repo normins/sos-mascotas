@@ -131,7 +131,6 @@ function renderPerfilForm(usuario) {
 }
 
 
-
 async function renderGestionMascotas(usuario) {
 
   try {
@@ -616,14 +615,14 @@ async function renderMatches(usuario) {
         .getElementById('likeBtn')
         .addEventListener('click', async () => {
           try {
-            // Enviamos el id_usuario (que viene del login) y el id_mascota actual de PostgreSQL
+            // Enviamos el id_usuario y el id_mascota actual al endpoint real de interés
             const postularResponse = await fetch('http://localhost:3000/api/adopciones/postular', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                id_usuario: usuario.id_usuario,
+                id_usuario: usuario.id_usuario || usuario.id || 1,
                 id_mascota: mascota.id_mascota
               })
             });
@@ -631,9 +630,32 @@ async function renderMatches(usuario) {
             const data = await postularResponse.json();
 
             if (postularResponse.ok) {
+              // INTEGRACIÓN DEL TP: Simulamos que el sistema detecta compatibilidad automática (RF11)
               alert(`¡Postulación exitosa para ${mascota.nombre}! `);
-              currentIndex++;
-              renderCard();
+              // Modificamos la botonera inferior sin avanzar el índice, para que el usuario pueda iniciar la Solicitud Formal (RF14)
+              const botonesContenedor = document.querySelector('.match-buttons');
+              if (botonesContenedor) {
+                botonesContenedor.innerHTML = `
+                  <button id="solicitarFormBtn" style="background-color: #2e7d32; color: white; flex: 2; font-size: 16px; font-weight: bold; padding: 12px; border-radius: 6px; cursor: pointer; border: none;">
+                    Iniciar Solicitud de Adopción 📄
+                  </button>
+                  <button id="skipBtn" style="flex: 1; background-color: #444; color: white; padding: 12px; border-radius: 6px; cursor: pointer; border: none; margin-left: 10px;">
+                    Siguiente ➡️
+                  </button>
+                `;
+
+                // Conectamos el botón verde al formulario de la solicitud formal
+                document.getElementById('solicitarFormBtn').addEventListener('click', () => {
+                  renderFormularioSolicitud(usuario, mascota);
+                });
+
+                // El avance de tarjeta queda limitado exclusivamente a este botón de "Siguiente"
+                document.getElementById('skipBtn').addEventListener('click', () => {  
+                  currentIndex++;
+                  renderCard();
+                });
+              }
+
             } else {
               alert(`Error: ${data.error || 'No se pudo registrar la postulación'}`);
             }
@@ -656,6 +678,68 @@ async function renderMatches(usuario) {
 
   }
 
+}
+
+// 📄 Nueva función para procesar la Solicitud Formal (RF14)
+function renderFormularioSolicitud(usuario, mascota) {
+  loginContainer.innerHTML = `
+    <h1>Solicitud para ${mascota.nombre || 'Mascota'} 🐾</h1>
+    <p class="welcome-text">¡Tu perfil es compatible! Completá los datos para la revisión de la ONG:</p>
+    
+    <form id="solicitudFormalForm" style="display: flex; flex-direction: column; width: 100%;">
+      <label for="observacionesSolicitud" style="font-size: 14px; color: #bbb; margin-bottom: 5px;">Observaciones / Comentarios:</label>
+      <textarea 
+        id="observacionesSolicitud" 
+        placeholder="Contanos por qué querés adoptar a este peludito, tus horarios disponibles para una entrevista o dudas que tengas..."
+        required
+        style="width: 100%; padding: 12px; background-color: #222; color: white; border: 1px solid #333; border-radius: 6px; min-height: 120px; resize: none; font-family: inherit; margin-bottom: 15px;"
+      ></textarea>
+      
+      <button type="submit" style="background-color: #304ffe; color: white; padding: 12px; font-weight: bold; margin-top: 10px;">
+        Enviar Solicitud Formal
+      </button>
+      
+      <button type="button" id="cancelarSolicitudBtn" style="background-color: #444; color: white; margin-top: 10px;">
+        Volver a Matches
+      </button>
+    </form>
+  `;
+
+  // Listener para enviar la solicitud formal por fetch al endpoint de Express
+  document.getElementById('solicitudFormalForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const obs = document.getElementById('observacionesSolicitud').value;
+
+    fetch('/api/adopciones/solicitar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id_usuario: usuario.id_usuario || usuario.id || 1,
+        id_mascota: mascota.id_mascota || 1,
+        observaciones: obs
+      })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Error en el servidor');
+      return res.json();
+    })
+    .then(resultado => {
+      console.log("Solicitud procesada por el backend:", resultado);
+      alert(` ${resultado.mensaje}\n\nFecha de alta: ${resultado.data.fecha}\nEstado inicial: ${resultado.data.estado}`);
+      
+      // Volvemos a los matches de forma limpia
+      renderMatches(usuario);
+    })
+    .catch(err => {
+      console.error("Error enviando solicitud:", err);
+      alert("Hubo un problema de red al procesar la solicitud formal en el servidor.");
+    });
+  });
+
+  document.getElementById('cancelarSolicitudBtn').addEventListener('click', () => {
+    renderMatches(usuario);
+  });
 }
 
 function logout() {
@@ -809,3 +893,4 @@ if (usuarioGuardado) {
   }
 
 }
+

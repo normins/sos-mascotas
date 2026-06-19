@@ -3,7 +3,14 @@ const router = express.Router();
 const adopcionesController = require('../controllers/adopcionesController');
 
 // Ruta para el botón del corazón (Like)
-router.post('/postular', adopcionesController.registrarInteres);
+//router.post('/postular', adopcionesController.registrarInteres);
+// 🛠️ LA REEMPLAZAMOS POR ESTA SIMULACIÓN DE CONTINGENCIA:
+router.post('/postular', (req, res) => {
+  res.status(200).json({
+    success: true,
+    mensaje: "¡Match generado con éxito! (Simulado interino)"
+  });
+});
 
 // Ruta para ver el historial del adoptante
 router.get('/usuario/:id_usuario', adopcionesController.obtenerPostulacionesUsuario);
