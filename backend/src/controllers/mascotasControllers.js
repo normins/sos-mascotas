@@ -76,24 +76,29 @@ exports.obtenerMascotas = async (req, res, next) => {
 // .............................................................
 exports.crearMascota = async (req, res, next) => {
   try {
-    const { nombre, especie, sexo } = req.body;
+    const { nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id } = req.body;
 
-    if (!nombre || !especie || !sexo ) {
+    if (!nombre || !especie || !sexo) {
       return res.status(400).json({
-        error: 'Faltan campos obligatorios.'
+        error: 'Nombre, especie y sexo son campos obligatorios.'
       });
     }
 
     if (db.isSimulated()) {
       const nuevaMascota = {
         id: mascotasMock.length + 101,
-        nombre,  
+        nombre,
         especie,
         sexo,
-        estado: 'Disponible'
+        edad: edad || null,
+        tamanio: tamanio || null,
+        descripcion: descripcion || null,
+        estado: estado || 'Disponible',
+        usuario_id: usuario_id || 1
       };
 
       mascotasMock.push(nuevaMascota);
+      global.mascotasCompartidas = mascotasMock;
 
       return res.status(201).json({
         mensaje: 'Mascota guardada en simulador',
@@ -102,9 +107,9 @@ exports.crearMascota = async (req, res, next) => {
     }
 
     const queryTexto = `
-      INSERT INTO mascotas
-      (nombre, especie, sexo, estado)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO mascota
+      (nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -112,7 +117,11 @@ exports.crearMascota = async (req, res, next) => {
       nombre,
       especie,
       sexo,
-      'Disponible'
+      edad || null,
+      tamanio || null,
+      estado || 'Disponible',
+      descripcion || null,
+      usuario_id || 1
     ];
 
     const { rows } = await db.query(queryTexto, valores);

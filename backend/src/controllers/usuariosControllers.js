@@ -211,3 +211,42 @@ exports.obtenerAdopcionesUsuario = async (req, res, next) => {
     next(error);
   }
 };
+
+
+// 4. Guardar perfil de adopción
+exports.guardarPerfilAdopcion = async (req, res, next) => {
+  try {
+    const { id_usuario, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio } = req.body;
+
+    if (!id_usuario) {
+      return res.status(400).json({ error: "id_usuario es requerido." });
+    }
+
+    // Modo simulador
+    if (db.isSimulated()) {
+      console.log(`[Perfil Adopción Simulador] Guardando perfil para usuario: ${id_usuario}`);
+      return res.status(201).json({
+        mensaje: "Perfil de adopción guardado en simulador",
+        perfil: { id_usuario, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio }
+      });
+    }
+
+    // Base de datos real
+    const queryInsert = `
+      INSERT INTO perfil_adopcion (usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (usuario_id) DO UPDATE SET
+        tipo_vivienda = $2, tiene_patio = $3, experiencia = $4, otras_mascotas = $5, preferencia_tamanio = $6
+      RETURNING id, usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio
+    `;
+
+    const { rows } = await db.query(queryInsert, [id_usuario, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio]);
+
+    return res.status(201).json({
+      mensaje: "Perfil de adopción guardado en BD real",
+      perfil: rows[0]
+    });
+  } catch (error) {
+    next(error);
+  }
+};

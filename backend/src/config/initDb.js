@@ -46,12 +46,13 @@ const crearTablasAutomaticamente = async (pool) => {
 
     // Array de queries en orden (respetando dependencias de FK)
     const queries = [
-      // 1. TABLA BASE: Usuario
+      // 1. TABLA BASE: Usuario (¡Actualizado con el campo ROL!)
       `CREATE TABLE IF NOT EXISTS usuario (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        rol VARCHAR(20) DEFAULT 'adoptante', -- <-- CAMBIO CLAVE PARA EL FRONTEND
         telefono VARCHAR(20),
         activo BOOLEAN DEFAULT true,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -134,7 +135,7 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 10. Match (Enuelto en comillas por ser palabra reservada)
+      // 10. Match (Envuelto en comillas por ser palabra reservada)
       `CREATE TABLE IF NOT EXISTS "match" (
         id SERIAL PRIMARY KEY,
         interes_id INTEGER NOT NULL UNIQUE REFERENCES interes(id) ON DELETE CASCADE,
@@ -182,6 +183,17 @@ const crearTablasAutomaticamente = async (pool) => {
         nombre VARCHAR(255) NOT NULL,
         descripcion TEXT,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // 15. Reportes (Community reports/alerts)
+      `CREATE TABLE IF NOT EXISTS reportes (
+        id SERIAL PRIMARY KEY,
+        tipo_reporte VARCHAR(100) NOT NULL,
+        descripcion TEXT NOT NULL,
+        anonimo BOOLEAN DEFAULT false,
+        estado VARCHAR(100) DEFAULT 'Pendiente',
+        fecha DATE DEFAULT CURRENT_DATE,
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`
     ];
 
@@ -190,7 +202,7 @@ const crearTablasAutomaticamente = async (pool) => {
       try {
         await pool.query(queries[i]);
         const numeroTabla = i + 1;
-        console.log(`✅ Tabla ${numeroTabla}/14 verificada/creada`);
+        console.log(`✅ Tabla ${numeroTabla}/15 verificada/creada`);
       } catch (err) {
         console.error(`❌ Error en query ${i + 1}:`, err.message);
         throw err;
@@ -200,7 +212,7 @@ const crearTablasAutomaticamente = async (pool) => {
     console.log(`
 ==================================================================
 ✨ [InitDB] ¡Base de datos inicializada exitosamente!
-📦 Todas las 14 tablas y relaciones están listas
+📦 Todas las 15 tablas y relaciones están listas
 ==================================================================
     `);
 

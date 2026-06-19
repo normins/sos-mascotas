@@ -14,25 +14,6 @@ router.get('/:usuarioId/adopciones', usuariosController.obtenerAdopcionesUsuario
 
 // POST /api/usuarios/perfil
 // Guarda o actualiza las preferencias extendidas del adoptante (RF05)
-router.post('/perfil', (req, res) => {
-  const { id_usuario, tipoVivienda, tienePatio, experiencia, otrasMascotas, preferenciaTamano } = req.body;
-
-  console.log("➡️ Servidor recibió datos de PerfilAdopcion:", req.body);
-
-  // Simulamos la respuesta estructurada exacta de la base de datos
-  res.status(200).json({
-    success: true,
-    mensaje: "Perfil de adopción guardado correctamente (Simulado de contingencia)",
-    data: {
-      id: 999, // ID simulado
-      id_usuario: id_usuario || 1,
-      tipoVivienda,
-      tienePatio,
-      experiencia,
-      otrasMascotas,
-      preferenciaTamano
-    }
-  });
-});
+router.post('/perfil', usuariosController.guardarPerfilAdopcion);
 
 module.exports = router;
