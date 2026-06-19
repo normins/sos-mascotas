@@ -57,15 +57,15 @@ exports.registrarUsuario = async (req, res, next) => {
       });
     }
 
-    // Base de datos real 
-    const consultaExiste = 'SELECT id_usuario FROM usuarios WHERE email = $1';
+    // Base de datos real
+    const consultaExiste = 'SELECT id FROM usuario WHERE email = $1';
     const resultadoExiste = await db.query(consultaExiste, [emailFormat]);
     if (resultadoExiste.rows.length > 0) {
       return res.status(409).json({ error: "El email ya está registrado." });
     }
 
     // Insertamos el passwordHash en lugar de la clave original
-    const queryInsert = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario, nombre, email, rol';
+    const queryInsert = 'INSERT INTO usuario (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol';
     const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, 'adoptante']);
     
     return res.status(201).json({ mensaje: "Usuario registrado en BD real con encriptación", usuario: rows[0] });
@@ -120,7 +120,7 @@ exports.iniciarSesion = async (req, res, next) => {
     }
 
     // Base de datos real
-    const queryTexto = 'SELECT * FROM usuarios WHERE email = $1';
+    const queryTexto = 'SELECT * FROM usuario WHERE email = $1';
     const { rows } = await db.query(queryTexto, [emailFormat]);
 
     if (rows.length === 0) {
@@ -138,7 +138,7 @@ exports.iniciarSesion = async (req, res, next) => {
     return res.status(200).json({
       mensaje: "¡Inicio de sesión exitoso en Base de datos real con seguridad bcrypt!",
       usuario: {
-        id_usuario: usuarioReal.id_usuario,
+        id_usuario: usuarioReal.id,
         nombre: usuarioReal.nombre,
         email: usuarioReal.email,
         rol: usuarioReal.rol
