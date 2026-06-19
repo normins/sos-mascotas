@@ -53,12 +53,37 @@ function actualizarBotonEstado(boton, monto) {
 
 function enviarDonacion() {
     const contenedorMensaje = document.getElementById('donacion-mensaje');
-    contenedorMensaje.innerHTML = `🐾 Conectando con Mercado Pago para procesar tus <strong>$${montoFinal.toLocaleString('es-AR')}</strong>...`;
+    contenedorMensaje.innerHTML = `🐾 Procesando donación de $${montoFinal.toLocaleString('es-AR')}...`;
     contenedorMensaje.classList.remove('hidden');
 
-    setTimeout(() => {
-        contenedorMensaje.innerHTML = `✨ ¡Simulación de pago exitosa! Muchas gracias por colaborar con SOS Mascotas.`;
-    }, 2500);
+    // Obtener usuario del localStorage
+    const usuarioData = JSON.parse(localStorage.getItem('usuario')) || {};
+    const usuario_id = usuarioData.id_usuario || usuarioData.id || 1;
+
+    const datosDonacion = {
+        usuario_id,
+        monto: montoFinal,
+        medio: 'Mercado Pago'
+    };
+
+    fetch('http://localhost:3000/api/donaciones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosDonacion)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.donacion || data.mensaje) {
+            contenedorMensaje.innerHTML = `✨ ¡Donación registrada! Muchas gracias por colaborar con SOS Mascotas.`;
+            console.log('Donación guardada:', data);
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        contenedorMensaje.innerHTML = `⚠️ Error al guardar donación: ${error.message}. Reintenta.`;
+        console.error(error);
+    });
 }
 
 function copiarAlPortapapeles(idElemento) {

@@ -85,12 +85,12 @@ function renderPerfilForm(usuario) {
     event.preventDefault();
 
     const perfilData = {
-      id_usuario: usuario.id_usuario || usuario.id || 1, // Sincroniza con el ID proveniente de PostgreSQL
-      tipoVivienda: document.getElementById('tipoVivienda').value,
-      tienePatio: document.getElementById('tienePatio').value,
+      id_usuario: usuario.id_usuario || usuario.id || 1,
+      tipo_vivienda: document.getElementById('tipoVivienda').value,
+      tiene_patio: document.getElementById('tienePatio').value === 'Sí',
       experiencia: document.getElementById('experiencia').value,
-      otrasMascotas: document.getElementById('otrasMascotas').value,
-      preferenciaTamano: document.getElementById('preferenciaTamano').value
+      otras_mascotas: document.getElementById('otrasMascotas').value === 'Sí',
+      preferencia_tamanio: document.getElementById('preferenciaTamano').value
     };
 
     console.log(" Enviando preferencias al servidor...", perfilData);
@@ -303,6 +303,19 @@ function renderCrearMascota(usuario) {
 
       </select>
 
+      <input
+        type="number"
+        id="edadMascota"
+        placeholder="Edad (años)"
+        min="0"
+      >
+
+      <textarea
+        id="descripcionMascota"
+        placeholder="Descripción (salud, comportamiento, etc.)"
+        rows="3"
+      ></textarea>
+
       <button type="submit">
         Guardar mascota
       </button>
@@ -337,6 +350,10 @@ function renderCrearMascota(usuario) {
     const tamanio =
       document.getElementById('tamanioMascota').value;
 
+    const edad = document.getElementById('edadMascota').value || null;
+
+    const descripcion = document.getElementById('descripcionMascota').value || null;
+
     try {
 
       const response = await fetch(
@@ -353,7 +370,11 @@ function renderCrearMascota(usuario) {
             nombre,
             especie,
             sexo,
-            tamanio
+            tamanio,
+            edad: edad ? parseInt(edad) : null,
+            descripcion,
+            usuario_id: usuario.id_usuario || usuario.id || 1,
+            estado: 'Disponible'
           })
 
         }
