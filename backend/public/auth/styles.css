@@ -11,11 +11,13 @@ body {
 }
 
 .login-container {
-  height: 100vh;
+  min-height: calc(100vh - 80px);
 
   display: flex;
   justify-content: center;
   align-items: center;
+
+  margin-top: 20px;
 }
 
 .login-card {

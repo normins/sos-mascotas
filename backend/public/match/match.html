@@ -2,60 +2,36 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>SOS Mascotas</title>
+  <title>Match</title>
 
-  <!-- CSS GLOBAL -->
-  <link rel="stylesheet" href="styles-global.css">
+  <!-- IMPORTANTE: subir nivel de carpeta -->
+  <link rel="stylesheet" href="../styles-global.css">
+  <link rel="stylesheet" href="match.css">
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="logo">SOS Mascotas 🐾</div>
 
   <ul class="nav-links">
-    <li><a href="index.html" class="active">Inicio</a></li>
-    <li><a href="muro/index.html">Muro</a></li>
-    <li><a href="donaciones/index.html">Donaciones</a></li>
-    <li><a href="match/match.html">Match</a></li>
-    <li><a href="voluntarios/voluntarios.html">Voluntarios</a></li>
-    <li><a href="auth/index.html" id="nav-login">Ingresar </a></li>
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="../muro/index.html">Muro</a></li>
+    <li><a href="../donaciones/index.html">Donaciones</a></li>
+    <li><a href="match.html" class="active">Match</a></li>
+    <li><a href="../voluntarios/voluntarios.html">Voluntarios</a></li>
+    <li><a href="../auth/index.html" id="nav-login">Ingresar </a></li>
     <li><a href="#" id="nav-logout" style="display: none; color: salmon; font-weight: bold;">Salir 🚪</a></li>
   </ul>
 </header>
 
-<!-- MAIN -->
-<main class="hero-section">
+<main class="match-container">
+  <h1>Match de mascotas</h1>
 
-  <h1>SOS Mascotas</h1>
-
-  <p>
-    Conectando corazones solidarios con peluditos que buscan un hogar seguro y feliz.
-  </p>
-
-  <!-- BOTONES -->
-  <div class="contenedor-botones">
-
-    <a href="muro/index.html" class="btn-landing btn-muro">
-      Ver mascotas en adopción 🐾
-    </a>
-
-    <a href="donaciones/index.html" class="btn-landing btn-apoyar">
-      Apoyar al refugio ♥
-    </a>
-
-    <a href="match/match.html" class="btn-landing btn-match">
-      Match 🐾
-    </a>
-
-    <a href="voluntarios/voluntarios.html" class="btn-landing btn-voluntarios">
-      Voluntarios 🤝
-    </a>
-
-  </div>
-
+  <div id="contenedor"></div>
 </main>
+
+<script src="match.js"></script>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -67,7 +43,7 @@
       // 1. Cambiamos el texto al nombre del usuario
       loginLink.textContent = `Mi Perfil (${usuarioLogueado.nombre})`;
       
-      loginLink.href = "auth/index.html"; 
+      loginLink.href = "../auth/index.html"; 
 
       // 2. Hacemos visible el botón de Cerrar Sesión
       if (logoutLink) {
@@ -80,7 +56,7 @@
           alert("Sesión cerrada correctamente. ¡Hasta luego! 🐾");
           
           // Redirecciona al inicio de forma limpia
-           window.location.href = "index.html"; 
+          window.location.href = "../authindex.html"; 
         });
       }
     }

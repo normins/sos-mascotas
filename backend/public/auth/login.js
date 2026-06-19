@@ -1,15 +1,9 @@
 const loginForm = document.getElementById('loginForm');
-
 const registerForm = document.getElementById('registerForm');
-
 const message = document.getElementById('message');
-
 const showRegister = document.getElementById('showRegister');
-const showLogin =
-  document.getElementById('showLogin');
-
-const loginContainer =
-  document.querySelector('.login-card');
+const showLogin = document.getElementById('showLogin');
+const loginContainer = document.querySelector('.login-card');
 
 showRegister.addEventListener('click', () => {
 
@@ -209,7 +203,7 @@ async function renderGestionMascotas(usuario) {
 
   try {
 
-    const response = await fetch('/api/mascotas'
+    const response = await fetch('http://localhost:3000/api/mascotas'
     );
 
     let mascotas = await response.json();
@@ -243,16 +237,16 @@ async function renderGestionMascotas(usuario) {
           <div class="mascota-card">
 
             <img
-    src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
-    class="mascota-img"
-  >
+              src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
+              class="mascota-img"
+            >
             <h3>${mascota.nombre}</h3>
 
             <p>${mascota.especie}</p>
 
             <p>${mascota.sexo}</p>
 
-            <p>${mascota.tamanio}</p>
+            <p>${mascota.tamanio || mascota.raza || 'Mediano'}</p>
 
             <button
               class="inactive-btn"
@@ -413,7 +407,7 @@ function renderCrearMascota(usuario) {
     try {
 
       const response = await fetch(
-        '/api/mascotas',
+        'http://localhost:3000/api/mascotas',
         {
 
           method: 'POST',
@@ -524,6 +518,10 @@ function renderAdoptantePanel(usuario) {
         Ver matches
       </button>
 
+      <button id="irInicioBtn" style="background-color: #2e7d32; color: white;">
+        Ver Mascotas (Inicio) 🐾
+      </button>
+
       <button id="logoutBtn">
         Cerrar sesión
       </button>
@@ -548,6 +546,13 @@ function renderAdoptantePanel(usuario) {
 
     });
 
+    document
+      .getElementById('irInicioBtn')
+      .addEventListener('click', () => {
+        window.location.href = "../index.html";
+    });
+
+
   document
     .getElementById('logoutBtn')
     .addEventListener('click', logout);
@@ -560,7 +565,7 @@ async function renderMatches(usuario) {
   try {
 
     const response = await fetch(
-      '/api/mascotas'
+      'http://localhost:3000/api/mascotas'
     );
 
     const mascotas = await response.json();
@@ -608,64 +613,49 @@ async function renderMatches(usuario) {
             class="match-img"
           >
 
-<div class="match-info">
 
-  <h2>${mascota.nombre}</h2>
-
-  <p>
-    ${mascota.especie} • ${mascota.sexo}
-  </p>
-
-  <p>
-    ${mascota.tamanio}
-  </p>
-
-  <p>
-    ${mascota.edad_estimada}
-  </p>
-
-  <p>
-    ${mascota.ubicacion}
-  </p>
-
-  <p>
-    ${mascota.descripcion}
-  </p>
-
-  <p>
-    <strong>Requisitos:</strong>
-    ${mascota.requisitos_adopcion}
-  </p>
-
-</div>
+          <div class="match-info">
+            <h2>${mascota.nombre || 'Sin nombre'}</h2>
+            <p>
+              ${mascota.especie || 'No especificada'} • ${mascota.sexo || 'No especificado'}
+            </p>
+            <p>
+              <strong>Raza:</strong> ${mascota.raza || 'Mezcla'}  </p>
+            <p>
+              <strong>Edad:</strong> ${mascota.edad || 'N/A'} meses </p>
+            <p>
+              <strong>Estado:</strong> ${mascota.estado || 'Disponible'}
+            </p>
+            <p>
+              ${mascota.descripcion || 'Sin descripción'}
+            </p>
+          </div>
 
 
 
-<div class="match-buttons">
+          <div class="match-buttons">
 
-  <button
-    id="rejectBtn"
-    class="reject-btn"
-  >
-    ✖
-  </button>
+            <button
+              id="rejectBtn"
+              class="reject-btn"
+            >
+              ✖
+            </button>
 
-  <button
-    id="likeBtn"
-    class="like-btn"
-  >
-    ❤
-  </button>
+            <button
+              id="likeBtn"
+              class="like-btn"
+            >
+              ❤
+            </button>
 
-  <button
-    id="volverMatchesBtn"
-  >
-    Volver
-  </button>
+            <button
+              id="volverMatchesBtn"
+            >
+              Volver
+            </button>
 
-</div>
-
-
+          </div>
 
         </div>
 
@@ -681,24 +671,44 @@ async function renderMatches(usuario) {
 
         });
 
-document
-  .getElementById('volverMatchesBtn')
-  .addEventListener('click', () => {
+      document
+        .getElementById('volverMatchesBtn')
+        .addEventListener('click', () => {
 
-    renderAdoptantePanel(usuario);
+          renderAdoptantePanel(usuario);
 
-  });
-
-
+        });
 
       document
         .getElementById('likeBtn')
-        .addEventListener('click', () => {
+        .addEventListener('click', async () => {
+          try {
+            // Enviamos el id_usuario (que viene del login) y el id_mascota actual de PostgreSQL
+            const postularResponse = await fetch('http://localhost:3000/api/adopciones/postular', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                id_usuario: usuario.id_usuario,
+                id_mascota: mascota.id_mascota
+              })
+            });
 
-          currentIndex++;
+            const data = await postularResponse.json();
 
-          renderCard();
+            if (postularResponse.ok) {
+              alert(`¡Postulación exitosa para ${mascota.nombre}! `);
+              currentIndex++;
+              renderCard();
+            } else {
+              alert(`Error: ${data.error || 'No se pudo registrar la postulación'}`);
+            }
 
+          } catch (error) {
+            console.error("Error al enviar la postulación:", error);
+            alert("Error de red al intentar postularse.");
+          }
         });
 
     }
@@ -715,12 +725,11 @@ document
 
 }
 
-
 function logout() {
 
   localStorage.removeItem('usuario');
-
-  location.reload();
+  alert("Sesión cerrada correctamente. ¡Hasta luego! 🐾");
+  window.location.href = "../index.html";
 
 }
 
@@ -736,21 +745,11 @@ loginForm.addEventListener('submit', async (event) => {
 
   try {
 
-    const response = await fetch(
-      '/api/usuarios/login',
+    const response = await fetch('http://localhost:3000/api/usuarios/login',
       {
-
         method: 'POST',
-
-        headers: {
-          'Content-Type': 'application/json'
-        },
-
-        body: JSON.stringify({
-          email,
-          password
-        })
-
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
       }
     );
 
@@ -812,7 +811,7 @@ registerForm.addEventListener('submit', async (event) => {
   try {
 
     const response = await fetch(
-      '/api/usuarios/registrar',
+      'http://localhost:3000/api/usuarios/registrar',
       {
 
         method: 'POST',

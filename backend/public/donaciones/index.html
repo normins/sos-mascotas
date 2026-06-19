@@ -14,7 +14,10 @@
       <li><a href="../index.html">Inicio</a></li>
       <li><a href="/muro">Muro</a></li>
       <li><a href="/donaciones" class="active">Donaciones</a></li>
-      <li><a href="/login">Ingresar</a></li>
+      <li><a href="../match/match.html">Match</a></li>
+      <li><a href="../voluntarios/voluntarios.html">Voluntarios</a></li>
+      <li><a href="../auth/index.html" id="nav-login">Ingresar</a></li>
+      <li><a href="#" id="nav-logout" style="display: none; color: salmon; font-weight: bold;">Salir 🚪</a></li>
     </ul>
   </header>
 
@@ -58,5 +61,37 @@
   </main>
 
   <script src="donaciones.js"></script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const usuarioLogueado = JSON.parse(localStorage.getItem('usuario'));
+    const loginLink = document.getElementById('nav-login');
+    const logoutLink = document.getElementById('nav-logout'); // Capturamos el botón Salir
+
+    if (usuarioLogueado) {
+      // 1. Cambiamos el texto al nombre del usuario
+      loginLink.textContent = `Mi Perfil (${usuarioLogueado.nombre})`;
+      
+      loginLink.href = "auth/index.html"; 
+
+      // 2. Hacemos visible el botón de Cerrar Sesión
+      if (logoutLink) {
+        logoutLink.style.display = "inline-block";
+        
+        // 3. Escuchamos el clic para limpiar la sesión
+        logoutLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          localStorage.removeItem('usuario'); // Borra la sesión del navegador
+          alert("Sesión cerrada correctamente. ¡Hasta luego! 🐾");
+          
+          // Redirecciona al inicio de forma limpia
+          // Si estás en subcarpeta usa "../index.html", si estás en la raíz usa "index.html"
+          window.location.href = "index.html"; 
+        });
+      }
+    }
+  });
+</script>
+</script>
 </body>
 </html>

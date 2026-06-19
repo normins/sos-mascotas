@@ -32,7 +32,7 @@ function renderMascotas(listaMascotas) {
     muroContainer.innerHTML = '';
 
     if (!listaMascotas || listaMascotas.length === 0) {
-        muroContainer.innerHTML = '<p class="no-results">No se encontraron mascotas con esos filtros 🔍</p>';
+        muroContainer.innerHTML = '<p class="no-results">No se encontraron mascotas con esos filtros</p>';
         return;
     }
 
@@ -53,7 +53,7 @@ function renderMascotas(listaMascotas) {
                 <p class="detalles-p"><strong>Especie:</strong> ${mascota.especie} | <strong>Sexo:</strong> ${mascota.sexo || 'No especificado'}</p>
                 <p class="detalles-p"><strong>Tamaño:</strong> ${mascota.tamanio || 'Mediano'}</p>
                 <p class="detalles-p"><strong>Edad estimada:</strong> ${mascota.edad_estimada || 'N/A'}</p>
-                <button class="btn-primary" onclick="postularAdopcion(${mascota.id})">Postular Adopción</button>
+                <button class="btn-primary" onclick="postularAdopcion(${mascota.id_mascota})">Postular Adopción</button>
             </div>
         `;
         muroContainer.appendChild(card);
@@ -73,26 +73,38 @@ function aplicarFiltros() {
 }
 
 async function postularAdopcion(idMascota) {
-    const urlAdoptar = `http://localhost:3000/api/mascotas/${idMascota}/adoptar`;
+    // 1. Validamos de forma real si el usuario está en el LocalStorage
+    const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+
+    if (!usuarioGuardado) {
+        alert("Debes estar logueado como adoptante para postularte.");
+        // Redireccionar al login si no está logueada
+        window.location.href = '../auth/index.html'; 
+        return;
+    }
+
+    // 2. Apuntamos al endpoint real de Express
+    const urlAdoptar = 'http://localhost:3000/api/adopciones/postular';
     
     try {
         const response = await fetch(urlAdoptar, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                mensaje: "Hola, tengo los recursos, espacio seguro y el compromiso necesario para cuidar a este animalito de manera responsable."
+                id_usuario: usuarioGuardado.id_usuario, // Pasamos el ID real de la sesión
+                id_mascota: idMascota                 // Pasamos el ID del animal seleccionado
             })
         });
 
         const resultado = await response.json();
 
         if (response.ok) {
-            alert(`✨ ¡Postulación Exitosa!\n${resultado.mensaje || 'Tu solicitud fue recibida.'}`);
+            alert(`¡Postulación Exitosa!\n${resultado.mensaje || 'Tu solicitud fue recibida.'}`);
         } else {
-            alert(`⚠️ Validación del Servidor:\n${resultado.error}`);
+            alert(`Validación del Servidor:\n${resultado.error || 'No se pudo procesar.'}`);
         }
     } catch (error) {
-        console.error(error);
+        console.error("Error en la postulación:", error);
         alert('Error en la red al enviar la solicitud.');
     }
 }
