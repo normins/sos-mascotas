@@ -1,0 +1,98 @@
+.voluntarios-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.header-titulos {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.titulo-pagina {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.subtitulo-pagina {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.form-panel {
+  background-color: var(--card);
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.form-panel h2 {
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: center;
+  color: var(--text);
+}
+
+#form-voluntario {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grupo-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grupo-input label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: left;
+}
+
+.grupo-input input, .grupo-input select {
+  background-color: #1F1F1F;
+  color: #FFFFFF;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.grupo-input input::placeholder {
+  color: #666;
+}
+
+.grupo-input input:focus, .grupo-input select:focus {
+  border-color: var(--primary);
+}
+
+#form-voluntario .btn-primary {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  border-radius: 8px;
+  background-color: #1A1A1A;
+  color: var(--text-secondary);
+  border: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#form-voluntario .btn-primary:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 20px var(--primary-dark);
+}
