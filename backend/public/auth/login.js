@@ -84,7 +84,8 @@ function renderPerfilForm(usuario) {
   perfilForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
-    const perfil = {
+    const perfilData = {
+      id_usuario: usuario.id_usuario || usuario.id || 1, // Sincroniza con el ID proveniente de PostgreSQL
       tipoVivienda: document.getElementById('tipoVivienda').value,
       tienePatio: document.getElementById('tienePatio').value,
       experiencia: document.getElementById('experiencia').value,
@@ -92,11 +93,36 @@ function renderPerfilForm(usuario) {
       preferenciaTamano: document.getElementById('preferenciaTamano').value
     };
 
-    // Guardamos transitoriamente en LocalStorage manteniendo la estructura limpia
-    localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfil));
-    
-    alert("Preferencias de perfil actualizadas localmente. Listas para sincronizar con la base de datos 🐾");
+    console.log(" Enviando preferencias al servidor...", perfilData);
+
+    //  Conexión por red hacia Express
+    fetch('/api/usuarios/perfil', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(perfilData)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error en la respuesta del servidor');
+      return response.json();
+    })
+    .then(resultado => {
+      console.log("Servidor respondió con éxito:", resultado);
+      
+      // Resguardo local para persistencia inmediata de la interfaz
+      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
+      
+      alert(`¡Preferencias sincronizadas con el servidor! 🐾\n${resultado.mensaje}`);
+      renderAdoptantePanel(usuario);
+    })
+    .catch(error => {
+      console.error("Falló el guardado en el backend, aplicando respaldo local:", error);
+      alert("No se pudo conectar con el servidor temporalmente, pero tus cambios se guardaron localmente por seguridad.");
+      
+      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
     renderAdoptantePanel(usuario);
+    });
   });
 
   document.getElementById('volverPerfilBtn').addEventListener('click', () => {
