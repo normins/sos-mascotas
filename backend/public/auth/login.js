@@ -212,7 +212,7 @@ async function renderGestionMascotas(usuario) {
       renderAdminPanel(usuario);
     });
 
-    // 🎯 CONTROLADOR DE BAJA LÓGICA (DELETE)
+    //  CONTROLADOR DE BAJA LÓGICA (DELETE)
     document.querySelectorAll('.inactive-btn').forEach(button => {
       button.addEventListener('click', async (e) => {
         const id = e.target.getAttribute('data-id');
@@ -358,10 +358,14 @@ function renderAdminPanel(usuario) {
       Bienvenida ${usuario.nombre}
     </p>
 
-    <div class="dashboard-buttons">
+    <div class="dashboard-buttons" style="display: flex; flex-direction: column; gap: 10px;">
 
       <button id="managePetsBtn">
         Gestionar mascotas
+      </button>
+
+      <button id="manageRequestsBtn" style="background-color: #ff9800; color: white;">
+        Revisar Solicitudes
       </button>
 
       <button id="logoutBtn">
@@ -380,11 +384,120 @@ function renderAdminPanel(usuario) {
 
     });
 
+  // Abre el panel de control de adopciones
+  document
+    .getElementById('manageRequestsBtn')
+    .addEventListener('click', () => {
+
+      renderControlSolicitudes(usuario);
+
+  });
+
   document
     .getElementById('logoutBtn')
     .addEventListener('click', logout);
 
 }
+
+
+// 📋 PANEL DE CONTROL: Auditoría de solicitudes de adopción (PATCH)
+async function renderControlSolicitudes(usuario) {
+  try {
+    // Buscamos todas las solicitudes reales usando la ruta GET del backend
+    const response = await fetch('http://localhost:3000/api/mascotas/adopciones/todas');
+    const data = await response.json();
+    
+    const solicitudes = data.adopciones || [];
+
+    loginContainer.innerHTML = `
+      <h1>Solicitudes de Adopción</h1>
+      <p class="welcome-text">Auditoría y control de postulaciones en PostgreSQL</p>
+      
+      <div class="dashboard-buttons" style="margin-bottom: 15px;">
+        <button id="volverAdminDesdeSolBtn" style="background-color: #555;">Volver al Panel</button>
+      </div>
+
+      <div class="solicitudes-list" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+        ${solicitudes.length === 0 
+          ? `<p style="color: #888; text-align: center;">No hay solicitudes de adopción registradas en el sistema.</p>`
+          : solicitudes.map(sol => `
+            <div class="solicitud-card" style="background: #222; border-left: 4px solid #ff9800; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                  <h3 style="margin: 0; color: #fff; font-size: 16px;">Solicitud #${sol.id}</h3>
+                  <p style="margin: 2px 0; font-size: 13px; color: #aaa;"><strong>ID Adoptante:</strong> ${sol.usuarioId || sol.id_usuario}</p>
+                  <p style="margin: 2px 0; font-size: 13px; color: #aaa;"><strong>ID Mascota:</strong> ${sol.mascotaId || sol.id_mascota}</p>
+                  <p style="margin: 5px 0; font-size: 14px; color: #eee; font-style: italic;">"${sol.mensaje || 'Sin observaciones'}"</p>
+                </div>
+                <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; 
+                  background-color: ${sol.estado === 'Aprobada' ? '#2e7d32' : sol.estado === 'Rechazada' ? '#c62828' : '#ef6c00'}; color: white;">
+                  ${sol.estado}
+                </span>
+              </div>
+
+              ${sol.estado === 'Pendiente' ? `
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                  <button class="btn-aprobar" data-id="${sol.id}" style="flex: 1; padding: 6px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aprobar 🟢</button>
+                  <button class="btn-rechazar" data-id="${sol.id}" style="flex: 1; padding: 6px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Rechazar 🔴</button>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')
+        }
+      </div>
+    `;
+
+    document.getElementById('volverAdminDesdeSolBtn').addEventListener('click', () => {
+      renderAdminPanel(usuario);
+    });
+
+    // MANEJADOR DINÁMICO PARA ACTUALIZAR ESTADO (PATCH)
+    const procesarEstado = async (solicitudId, nuevoEstado) => {
+      try {
+        const resPatch = await fetch(`http://localhost:3000/api/mascotas/adopciones/${solicitudId}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-role': usuario.rol
+          },
+          body: JSON.stringify({ nuevo_estado: nuevoEstado }) // 'Aprobada' o 'Rechazada'
+        });
+
+        if (resPatch.ok) {
+          alert(`¡Solicitud #${solicitudId} cambiada a estado: ${nuevoEstado}! 🐾`);
+          renderControlSolicitudes(usuario); // Recarga la lista en tiempo real
+        } else {
+          const errData = await resPatch.json();
+          alert(`Error del servidor: ${errData.error || 'No se pudo procesar el cambio.'}`);
+        }
+      } catch (err) {
+        console.error("Error en petición PATCH:", err);
+        alert("Error de conexión con el backend.");
+      }
+    };
+
+    // Vincular clics de aprobación
+    document.querySelectorAll('.btn-aprobar').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        procesarEstado(id, 'Aprobada');
+      });
+    });
+
+    // Vincular clics de rechazo
+    document.querySelectorAll('.btn-rechazar').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        procesarEstado(id, 'Rechazada');
+      });
+    });
+
+  } catch (error) {
+    console.error("Error cargando panel de control de solicitudes:", error);
+    alert("Error al conectar con las rutas de adopciones.");
+  }
+}
+
 
 function renderAdoptantePanel(usuario) {
   console.log(usuario);

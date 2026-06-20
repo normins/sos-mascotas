@@ -34,8 +34,7 @@ exports.obtenerMascotas = async (req, res, next) => {
     // ..........................................
     //  Comportamiento en base de datos real 
     // ..........................................
-    // 💡 IMPORTANTE: Seleccionamos "id AS id_mascota" para que coincida con lo que el frontend espera
-    let queryTexto = 'SELECT id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id, fecha_creacion FROM mascotas WHERE 1=1';
+     let queryTexto = 'SELECT id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id, fecha_creacion FROM mascotas WHERE 1=1';
     const queryValores = [];
     let contadorParametros = 1;
 
@@ -50,7 +49,7 @@ exports.obtenerMascotas = async (req, res, next) => {
       contadorParametros++;
     }
     
-    // 🔧 CORREGIDO: Cambiado "id_mascota" por la columna real "id"
+    // Ordenamos por ID descendente para mostrar las mascotas más recientes primero
     queryTexto += ' ORDER BY id DESC';
 
     const { rows } = await db.query(queryTexto, queryValores);
@@ -100,7 +99,7 @@ exports.crearMascota = async (req, res, next) => {
       });
     }
 
-    // 🔧 CORREGIDO: Cambiado de "mascota" a "mascotas" en plural
+    // 
     const queryTexto = `
       INSERT INTO mascotas
       (nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id)
@@ -121,6 +120,7 @@ exports.crearMascota = async (req, res, next) => {
 
     const { rows } = await db.query(queryTexto, valores);
 
+    console.log(`[BD REAL] Mascota guardada con éxito. ID: ${rows[0].id_mascota} - Nombre: ${rows[0].nombre}`);
     return res.status(201).json({
       mensaje: 'Mascota guardada en Base de Datos real',
       mascota: rows[0]
@@ -172,13 +172,12 @@ exports.solicitarAdopcion = async (req, res, next) => {
       });
     }
 
-    // 🔧 CORREGIDO: Cambiado "id_mascota" por "id AS id_mascota" en la verificación
-    const checkMascota = await db.query('SELECT id AS id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
+     const checkMascota = await db.query('SELECT id AS id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
     if (checkMascota.rows.length === 0) {
       return res.status(404).json({ error: "La mascota real indicada no existe en la Base de Datos." });
     }
 
-    // 🔧 NOTA: Asegurate de mapear correctamente las variables "id_usuario" y "mensaje_motivacional" en tu endpoint de adopciones real si se usan en producción.
+    //  NOTA: Asegurate de mapear correctamente las variables "id_usuario" y "mensaje_motivacional" en tu endpoint de adopciones real si se usan en producción.
     const queryInsert = `
       INSERT INTO solicitud_adopcion (mascota_id, usuario_id, observaciones, estado) 
       VALUES ($1, $2, $3, $4) 
@@ -242,6 +241,14 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "La solicitud real indicada no existe en la Base de Datos." });
+    }
+
+    if (nuevo_estado === 'Aprobada') {
+      const idMascotaAprobada = rows[0].id_mascota;
+      
+      console.log(`Solicitud aprobada. Cambiando estado de Mascota ID: ${idMascotaAprobada} a 'Adoptado'`);
+      
+      await db.query('UPDATE mascotas SET estado = $1 WHERE id = $2', ['Adoptado', idMascotaAprobada]);
     }
 
     return res.status(200).json({
