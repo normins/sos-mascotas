@@ -205,20 +205,62 @@ exports.guardarPerfilAdopcion = async (req, res, next) => {
       });
     }
 
+    const otrasMascotasBooleano = otras_mascotas !== 'No';
     const queryInsert = `
       INSERT INTO perfil_adopcion (usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio)
       VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (usuario_id) DO UPDATE SET
-        tipo_vivienda = $2, tiene_patio = $3, experiencia = $4, otras_mascotas = $5, preferencia_tamanio = $6
+        tipo_vivienda = $2,
+        tiene_patio = $3, 
+        experiencia = $4, 
+        otras_mascotas = $5, 
+        preferencia_tamanio = $6
       RETURNING id, usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio
     `;
 
-    const { rows } = await db.query(queryInsert, [id_usuario, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio]);
+    const { rows } = await db.query(queryInsert, [
+      id_usuario,
+      tipo_vivienda,
+      tiene_patio, 
+      experiencia, 
+      otrasMascotasBooleano, 
+      preferencia_tamanio]);
 
     return res.status(201).json({
       mensaje: "Perfil de adopción guardado en BD real",
       perfil: rows[0]
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 5. Obtener el perfil de adopción (Precarga para el frontend)
+exports.obtenerPerfilAdopcion = async (req, res, next) => {
+  try {
+    const usuarioId = parseInt(req.params.usuarioId);
+
+    if (db.isSimulated()) {
+      return res.status(200).json({ perfil: null });
+    }
+
+    const queryTexto = 'SELECT * FROM perfil_adopcion WHERE usuario_id = $1';
+    const { rows } = await db.query(queryTexto, [usuarioId]);
+
+    if (rows.length === 0) {
+      return res.status(200).json({ perfil: null, mensaje: "Sin perfil previo." });
+    }
+
+    const perfilBD = rows[0];
+
+    // Pasamos el booleano de la BD al texto que espera el <select> del HTML
+    if (perfilBD.otras_mascotas === true) {
+      perfilBD.otras_mascotas = 'Ambos'; // Valor por defecto en la interfaz si tiene mascotas
+    } else if (perfilBD.otras_mascotas === false) {
+      perfilBD.otras_mascotas = 'No';
+    }
+
+    return res.status(200).json({ perfil: rows[0] });
   } catch (error) {
     next(error);
   }

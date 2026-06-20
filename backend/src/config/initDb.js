@@ -7,7 +7,7 @@ const asegurarBaseDeDatosExiste = async () => {
   const poolTemporal = new Pool({
     user: 'postgres',
     host: 'localhost',
-    password: 'postgres2026',
+    password: 'Mushu',
     port: 5432,
     database: 'postgres', // Base de datos por defecto para poder conectarnos
   });
