@@ -12,6 +12,9 @@ const reportesRoutes = require('./routes/reportes');
 const adopcionesRoutes = require('./routes/adopcionesRoutes');
 const donacionesRoutes = require('./routes/donaciones');
 const voluntariosRoutes = require('./routes/voluntarios');
+const publicacionesRoutes = require('./routes/publicaciones');
+const requisitosRoutes = require('./routes/requisitos');
+const hogarTransitoRoutes = require('./routes/hogarTransito');
 
 // Función principal async para inicializar la app
 const inicializarApp = async () => {
@@ -51,6 +54,9 @@ const inicializarApp = async () => {
     app.use('/api/adopciones', adopcionesRoutes);
     app.use('/api/donaciones', donacionesRoutes);
     app.use('/api/voluntarios', voluntariosRoutes);
+    app.use('/api/publicaciones', publicacionesRoutes);
+    app.use('/api/requisitos', requisitosRoutes);
+    app.use('/api/hogar-transito', hogarTransitoRoutes);
 
     // 7. Levantar el servidor
     app.listen(port, () => {
