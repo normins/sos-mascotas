@@ -185,9 +185,13 @@ async function renderGestionMascotas(usuario) {
       <div class="mascotas-list">
         ${visibles.map(mascota => {
           const idActual = mascota.id_mascota || mascota.id;
-          return `
+          const urlFoto = mascota.especie.toLowerCase() === 'perro' 
+            ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500' // Foto fija de perro
+            : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500'; // Foto fija de gato
+
+        return `
             <div class="mascota-card">
-              <img src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}" class="mascota-img">
+              <img src="${urlFoto}" alt="${mascota.nombre}" class="match-img" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
               <h3>${mascota.nombre}</h3>
               <p>${mascota.especie}</p>
               <p>${mascota.sexo}</p>
@@ -605,12 +609,16 @@ async function renderMatches(usuario) {
 
       const mascota = mascotas[currentIndex];
 
+      const urlFoto = mascota.especie.toLowerCase() === 'perro' 
+        ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500'
+        : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500';
+
       loginContainer.innerHTML = `
 
         <div class="match-card">
 
           <img
-            src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
+            src="${urlFoto?.[0] || 'https://picsum.photos/400'}"
             class="match-img"
           >
 

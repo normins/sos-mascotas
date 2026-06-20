@@ -42,27 +42,41 @@ function mostrar() {
 
   const m = mascotas[index];
 
-  // Usamos una foto por defecto si el registro viene null
-  const fotoUrl = m.fotos && m.fotos[0] ? m.fotos[0] : "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=600";
+  // Seleccionamos la foto según la especie real de PostgreSQL
+  const urlFoto = m.especie.toLowerCase() === 'perro' 
+    ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=600' // Foto fija de perro
+    : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=600'; // Foto fija de gato
 
   cont.innerHTML = `
-    <div class="wrapper-match">
-      <div class="card-match">
-        <div class="imagen-match">
-          <img src="${fotoUrl}" alt="${m.nombre}">
-        </div>
+    <div class="tarjeta-container" style="display: flex; justify-content: center; width: 100%; margin-top: 10px;">
+      <div class="tarjeta-match" style="background: #111; border: 1px solid #333; border-radius: 12px; overflow: hidden; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;">
         
-        <div class="info-match">
-          <h3>${m.nombre}</h3>
-          <p><strong>Especie:</strong> ${m.especie} | <strong>Sexo:</strong> ${m.sexo || 'No especificado'}</p>
-          <p><strong>Tamaño:</strong> ${m.tamanio || m.raza || 'Mediano'}</p> <p><strong>Edad:</strong> ${m.edad || m.edad_estimada || 'N/A'}</p>
-          <p style="margin-top: 10px; font-style: italic;">"${m.descripcion || 'Sin descripción disponible.'}"</p>
+        <div class="imagen-match" style="position: relative; width: 100%; height: 250px; background-color: #222;">
+          <img src="${urlFoto}" alt="${m.nombre}" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="nombre-match" style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 15px; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+            ${m.nombre}
+          </div>
         </div>
 
-        <div class="acciones-match">
-          <button class="btn-match btn-no" onclick="next()">✖</button>
-          <button class="btn-match btn-like" onclick="like()">❤</button>
+        <div class="detalles-match" style="padding: 0 20px; display: flex; flex-direction: column; gap: 6px; color: #fff;">
+          <p style="margin: 0; font-size: 15px;"><strong style="color: #aaa;">Especie:</strong> ${m.especie}</p>
+          <p style="margin: 0; font-size: 15px;"><strong style="color: #aaa;">Sexo:</strong> ${m.sexo || 'No especificado'}</p>
+          <p style="margin: 0; font-size: 15px;"><strong style="color: #aaa;">Tamaño:</strong> ${m.tamanio || m.raza || 'Mediano'}</p> 
+          <p style="margin: 0; font-size: 15px;"><strong style="color: #aaa;">Edad:</strong> ${m.edad || m.edad_estimada || 'N/A'}</p>
+          <p style="margin-top: 12px; margin-bottom: 5px; font-style: italic; color: #ddd; font-size: 14px; border-left: 2px solid #ff9800; padding-left: 10px;">
+            "${m.descripcion || 'Sin descripción disponible.'}"
+          </p>
         </div>
+
+        <div class="acciones-match" style="display: flex; justify-content: center; gap: 25px; margin-top: 10px; padding: 0 20px;">
+          <button class="btn-match btn-no" onclick="next()" style="width: 50px; height: 50px; border-radius: 50%; border: none; background-color: #333; color: #f44336; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: background 0.2s;">
+            ✖
+          </button>
+          <button class="btn-match btn-like" onclick="like()" style="width: 50px; height: 50px; border-radius: 50%; border: none; background-color: #2e7d32; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+            ❤
+          </button>
+        </div>
+
       </div>
     </div>
   `;

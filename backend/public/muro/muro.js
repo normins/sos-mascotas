@@ -40,10 +40,14 @@ function renderMascotas(listaMascotas) {
         const card = document.createElement('div');
         card.classList.add('card-mascota');
 
+        const urlFoto = mascota.especie.toLowerCase() === 'perro' 
+            ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=600' // Foto fija de perro
+            : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=600'; // Foto fija de gato
+
         // Mapeo adaptado exacto a los nombres de propiedades del seeder
         card.innerHTML = `
             <div class="wrapper-imagen">
-                <img src="${mascota.fotos && mascota.fotos[0] ? mascota.fotos[0] : 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=600'}" alt="${mascota.nombre}">
+                <img src="${urlFoto}" alt="${mascota.nombre}">
             </div>
             <div class="info-mascota">
                 <div class="info-header">
