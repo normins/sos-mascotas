@@ -1,28 +1,30 @@
-
 const pool = require('../config/db'); 
 
-const registrarInteres = async (req, res) => {
+// 1. POST /api/adopciones/postular - Registrar interés y generar Match
+exports.registrarInteres = async (req, res) => {
     const { id_usuario, id_mascota } = req.body;
 
     try {
-        // 1. Registrar el interés en la tabla intermedia (RF09)
+        // Registrar el interés en la tabla intermedia real
         const nuevoInteres = await pool.query(
-            'INSERT INTO intereses (id_usuario, id_mascota) VALUES ($1, $2) RETURNING *',
+            'INSERT INTO interes (usuario_id, mascota_id) VALUES ($1, $2) RETURNING *',
             [id_usuario, id_mascota]
         );
 
-        // 2. Lógica de Match Automático (RF11): 
-        // Por ahora, simulamos que si el usuario tiene perfil completo, se genera el Match.
-        // En una próxima etapa podemos cruzar los requisitos reales.
+        const interesId = nuevoInteres.rows[0].id;
+
+        // Lógica de Match Automático
         const nuevoMatch = await pool.query(
-            'INSERT INTO matches (id_usuario, id_mascota, estado) VALUES ($1, $2, $3) RETURNING *',
-            [id_usuario, id_mascota, 'Valido']
+            'INSERT INTO "match" (interes_id, estado) VALUES ($1, $2) RETURNING *',
+            [interesId, 'Valido']
         );
 
-        // 3. Dejar la Solicitud generada lista para que la revise el Admin (RF14)
+        const matchId = nuevoMatch.rows[0].id;
+
+        // Dejar la Solicitud generada
         const nuevaSolicitud = await pool.query(
-            'INSERT INTO solicitudes_adopcion (id_usuario, id_mascota, estado) VALUES ($1, $2, $3) RETURNING *',
-            [id_usuario, id_mascota, 'Pendiente']
+            'INSERT INTO solicitud_adopcion (usuario_id, mascota_id, match_id, estado) VALUES ($1, $2, $3, $4) RETURNING *',
+            [id_usuario, id_mascota, matchId, 'Pendiente']
         );
 
         res.status(201).json({
@@ -38,16 +40,16 @@ const registrarInteres = async (req, res) => {
     }
 };
 
-const obtenerPostulacionesUsuario = async (req, res) => {
+// 2. GET /api/adopciones/usuario/:id_usuario - Obtener historial del usuario
+exports.obtenerPostulacionesUsuario = async (req, res) => {
     const { id_usuario } = req.params;
 
     try {
-        // Trae las solicitudes del usuario cruzando los datos con la tabla de mascotas (JOIN)
         const resultado = await pool.query(
-            `SELECT s.id_solicitud, s.estado, s.fecha, m.nombre, m.especie, m.sexo 
-             FROM solicitudes_adopcion s
-             JOIN mascotas m ON s.id_mascota = m.id_mascota
-             WHERE s.id_usuario = $1`,
+            `SELECT s.id AS id_solicitud, s.estado, s.fecha_creacion as fecha, m.nombre, m.especie, m.sexo 
+             FROM solicitud_adopcion s
+             JOIN mascotas m ON s.mascota_id = m.id
+             WHERE s.usuario_id = $1`,
             [id_usuario]
         );
 
@@ -56,9 +58,4 @@ const obtenerPostulacionesUsuario = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: "Error al obtener el historial" });
     }
-};
-
-module.exports = {
-    registrarInteres,
-    obtenerPostulacionesUsuario
 };

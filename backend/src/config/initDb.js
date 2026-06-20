@@ -46,13 +46,13 @@ const crearTablasAutomaticamente = async (pool) => {
 
     // Array de queries en orden (respetando dependencias de FK)
     const queries = [
-      // 1. TABLA BASE: Usuario (¡Actualizado con el campo ROL!)
+      // 1. TABLA BASE: Usuario
       `CREATE TABLE IF NOT EXISTS usuario (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        rol VARCHAR(20) DEFAULT 'adoptante', -- <-- CAMBIO CLAVE PARA EL FRONTEND
+        rol VARCHAR(20) DEFAULT 'adoptante',
         telefono VARCHAR(20),
         activo BOOLEAN DEFAULT true,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -99,8 +99,8 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 7. Mascota
-      `CREATE TABLE IF NOT EXISTS mascota (
+      // 7. Mascotas (¡Corregido a plural!)
+      `CREATE TABLE IF NOT EXISTS mascotas (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL,
         especie VARCHAR(50) NOT NULL,
@@ -113,7 +113,7 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 8. Publicacion
+      // 8. Publicacion (¡Referencia corregida a mascotas!)
       `CREATE TABLE IF NOT EXISTS publicacion (
         id SERIAL PRIMARY KEY,
         tipo VARCHAR(100) NOT NULL,
@@ -121,16 +121,16 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha DATE DEFAULT CURRENT_DATE,
         estado VARCHAR(100),
         usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
-        mascota_id INTEGER NOT NULL REFERENCES mascota(id) ON DELETE CASCADE,
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
         ubicacion_id INTEGER NOT NULL REFERENCES ubicacion(id) ON DELETE CASCADE,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 9. Interes
+      // 9. Interes (¡Referencia corregida a mascotas!)
       `CREATE TABLE IF NOT EXISTS interes (
         id SERIAL PRIMARY KEY,
         usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
-        mascota_id INTEGER NOT NULL REFERENCES mascota(id) ON DELETE CASCADE,
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
         fecha DATE DEFAULT CURRENT_DATE,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
@@ -144,11 +144,11 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 11. SolicitudAdopcion (Actualizado el FK hacia "match")
+      // 11. SolicitudAdopcion (¡Referencia corregida a mascotas!)
       `CREATE TABLE IF NOT EXISTS solicitud_adopcion (
         id SERIAL PRIMARY KEY,
         usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
-        mascota_id INTEGER NOT NULL REFERENCES mascota(id) ON DELETE CASCADE,
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
         administrador_id INTEGER REFERENCES administrador(id) ON DELETE SET NULL,
         match_id INTEGER REFERENCES "match"(id) ON DELETE SET NULL,
         fecha DATE DEFAULT CURRENT_DATE,
@@ -157,18 +157,18 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 12. RequisitoAdopcion
+      // 12. RequisitoAdopcion (¡Referencia corregida a mascotas!)
       `CREATE TABLE IF NOT EXISTS requisito_adopcion (
         id SERIAL PRIMARY KEY,
-        mascota_id INTEGER NOT NULL REFERENCES mascota(id) ON DELETE CASCADE,
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
         descripcion TEXT NOT NULL,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 13. HogarTransito
+      // 13. HogarTransito (¡Referencia corregida a mascotas!)
       `CREATE TABLE IF NOT EXISTS hogar_transito (
         id SERIAL PRIMARY KEY,
-        mascota_id INTEGER NOT NULL REFERENCES mascota(id) ON DELETE CASCADE,
+        mascota_id INTEGER NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
         usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
         fecha_inicio DATE NOT NULL,
         fecha_fin DATE,
@@ -185,7 +185,7 @@ const crearTablasAutomaticamente = async (pool) => {
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // 15. Reportes (Community reports/alerts)
+      // 15. Reportes
       `CREATE TABLE IF NOT EXISTS reportes (
         id SERIAL PRIMARY KEY,
         tipo_reporte VARCHAR(100) NOT NULL,

@@ -70,10 +70,11 @@ exports.obtenerPublicacionesPorTipo = async (req, res, next) => {
       });
     }
 
+    // 🔧 CORREGIDO: Cambiado "JOIN mascota m" a "JOIN mascotas m" en plural
     const querySelect = `
       SELECT p.*, m.nombre as mascota_nombre, m.especie, u.nombre as usuario_nombre
       FROM publicacion p
-      JOIN mascota m ON p.mascota_id = m.id
+      JOIN mascotas m ON p.mascota_id = m.id
       JOIN usuario u ON p.usuario_id = u.id
       WHERE LOWER(p.tipo) = LOWER($1)
       ORDER BY p.fecha_creacion DESC
@@ -102,10 +103,11 @@ exports.obtenerTodasPublicaciones = async (req, res, next) => {
       });
     }
 
+    // 🔧 CORREGIDO: Cambiado "JOIN mascota m" a "JOIN mascotas m" en plural
     const querySelect = `
       SELECT p.*, m.nombre as mascota_nombre, m.especie, u.nombre as usuario_nombre
       FROM publicacion p
-      JOIN mascota m ON p.mascota_id = m.id
+      JOIN mascotas m ON p.mascota_id = m.id
       JOIN usuario u ON p.usuario_id = u.id
       ORDER BY p.fecha_creacion DESC
     `;

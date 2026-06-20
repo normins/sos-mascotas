@@ -68,10 +68,11 @@ exports.obtenerHogaresUsuario = async (req, res, next) => {
       });
     }
 
+    // 🔧 CORREGIDO: Cambiado "JOIN mascota m" a "JOIN mascotas m" en plural
     const querySelect = `
       SELECT ht.*, m.nombre as mascota_nombre, m.especie, u.nombre as usuario_nombre
       FROM hogar_transito ht
-      JOIN mascota m ON ht.mascota_id = m.id
+      JOIN mascotas m ON ht.mascota_id = m.id
       JOIN usuario u ON ht.usuario_id = u.id
       WHERE ht.usuario_id = $1
       ORDER BY ht.fecha_inicio DESC
@@ -107,10 +108,11 @@ exports.obtenerHogaresMascota = async (req, res, next) => {
       });
     }
 
+    // 🔧 CORREGIDO: Cambiado "JOIN mascota m" a "JOIN mascotas m" en plural
     const querySelect = `
       SELECT ht.*, m.nombre as mascota_nombre, u.nombre as usuario_nombre
       FROM hogar_transito ht
-      JOIN mascota m ON ht.mascota_id = m.id
+      JOIN mascotas m ON ht.mascota_id = m.id
       JOIN usuario u ON ht.usuario_id = u.id
       WHERE ht.mascota_id = $1
       ORDER BY ht.fecha_inicio DESC
@@ -139,10 +141,11 @@ exports.obtenerTodosHogares = async (req, res, next) => {
       });
     }
 
+    // 🔧 CORREGIDO: Cambiado "JOIN mascota m" a "JOIN mascotas m" en plural
     const querySelect = `
       SELECT ht.*, m.nombre as mascota_nombre, m.especie, u.nombre as usuario_nombre
       FROM hogar_transito ht
-      JOIN mascota m ON ht.mascota_id = m.id
+      JOIN mascotas m ON ht.mascota_id = m.id
       JOIN usuario u ON ht.usuario_id = u.id
       ORDER BY ht.fecha_inicio DESC
     `;
