@@ -762,6 +762,9 @@ registerForm.addEventListener('submit', async (event) => {
   const password =
     document.getElementById('registerPassword').value;
 
+  const telefono = 
+    document.getElementById('registerPhone').value;  
+
   try {
 
     const response = await fetch(
@@ -777,7 +780,8 @@ registerForm.addEventListener('submit', async (event) => {
         body: JSON.stringify({
           nombre,
           email,
-          password
+          password,
+          telefono
         })
 
       }

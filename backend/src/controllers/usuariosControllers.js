@@ -7,7 +7,7 @@ let usuariosMock = global.usuariosCompartidos || [];
 // 1. Registro de usuarios encriptados
 exports.registrarUsuario = async (req, res, next) => {
   try {
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, telefono } = req.body;
 
     if (!nombre || !email || !password) {
       return res.status(400).json({ error: "Nombre, email y password son requeridos." });
@@ -44,6 +44,7 @@ exports.registrarUsuario = async (req, res, next) => {
         nombre, 
         email: emailFormat, 
         password: passwordHash,
+        telefono: telefono || null,
         rol: "adoptante" 
       };
       usuariosMock.push(nuevoUsuario);
@@ -61,8 +62,8 @@ exports.registrarUsuario = async (req, res, next) => {
       return res.status(409).json({ error: "El email ya está registrado." });
     }
 
-    const queryInsert = 'INSERT INTO usuario (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol';
-    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, 'adoptante']);
+    const queryInsert = 'INSERT INTO usuario (nombre, email, password, telefono, rol) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, email, telefono, rol';
+    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, telefono || null, 'adoptante']);
     
     return res.status(201).json({ mensaje: "Usuario registrado en BD real con encriptación", usuario: rows[0] });
   } catch (error) {
@@ -164,12 +165,11 @@ exports.obtenerAdopcionesUsuario = async (req, res, next) => {
       });
     }
 
-    // 🔧 CORREGIDO: Cambiado a la tabla "solicitud_adopcion", ajustados los campos del JOIN y removido "m.foto" que no existe en tu BD
-    const queryTexto = `
+      const queryTexto = `
       SELECT a.id as solicitud_id, a.estado, a.observaciones as mensaje, a.fecha_creacion,
              m.nombre as mascota_nombre, m.especie as mascota_especie
       FROM solicitud_adopcion a
-      INNER JOIN mascotas m ON a.mascota_id = m.id
+      INNER JOIN mascota m ON a.mascota_id = m.id
       WHERE a.usuario_id = $1
       ORDER BY a.id DESC
     `;
