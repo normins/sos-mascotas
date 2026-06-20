@@ -161,286 +161,191 @@ async function renderPerfilForm(usuario) {
 }
 
 
+// ==================================================================
+//  Listar mascotas y Gestión de baja lógica
+// ==================================================================
 async function renderGestionMascotas(usuario) {
-
   try {
+    const response = await fetch('http://localhost:3000/api/mascotas');
+    const data = await response.json();
+    
+    // Postgres nos devuelve la lista dentro de data.mascotas
+    let animales = data.mascotas || [];
 
-    const response = await fetch('http://localhost:3000/api/mascotas'
-    );
-
-    let mascotas = await response.json();
-
-    // Si lo que vuelve no es una lista, la convertimos en una lista vacía
-    if (!Array.isArray(mascotas)) {
-      mascotas = [];
-    } 
-
+    // Filtramos las 'Inactivas' para que actúe como una baja lógica real en la interfaz
+    const visibles = animales.filter(m => m.estado !== 'Inactiva');
 
     loginContainer.innerHTML = `
-
       <h1>Gestión de mascotas</h1>
-
       <div class="dashboard-buttons">
-
-        <button id="crearMascotaBtn">
-          Nueva mascota
-        </button>
-
-        <button id="volverAdminBtn">
-          Volver
-        </button>
-
+        <button id="crearMascotaBtn">Nueva mascota</button>
+        <button id="volverAdminBtn">Volver</button>
       </div>
 
       <div class="mascotas-list">
-
-        ${mascotas.map(mascota => `
-
-          <div class="mascota-card">
-
-            <img
-              src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
-              class="mascota-img"
-            >
-            <h3>${mascota.nombre}</h3>
-
-            <p>${mascota.especie}</p>
-
-            <p>${mascota.sexo}</p>
-
-            <p>${mascota.tamanio || mascota.raza || 'Mediano'}</p>
-
-            <button
-              class="inactive-btn"
-            >
-              Marcar inactiva
-            </button>
-
-          </div>
-
-        `).join('')}
-
+        ${visibles.map(mascota => {
+          const idActual = mascota.id_mascota || mascota.id;
+          return `
+            <div class="mascota-card">
+              <img src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}" class="mascota-img">
+              <h3>${mascota.nombre}</h3>
+              <p>${mascota.especie}</p>
+              <p>${mascota.sexo}</p>
+              <p>${mascota.tamanio || 'Mediano'}</p>
+              <p style="color: #ffb74d; font-size: 13px; font-weight: bold; margin: 5px 0;">Estado: ${mascota.estado}</p>
+              
+              <div style="display: flex; gap: 5px; width: 100%; margin-top: 10px;">
+                <button class="edit-btn" data-id="${idActual}" style="flex: 1; padding: 8px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Editar</button>
+                <button class="inactive-btn" data-id="${idActual}" data-nombre="${mascota.nombre}" style="flex: 1;">Eliminar</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
-
     `;
 
-    document
-      .getElementById('crearMascotaBtn')
-      .addEventListener('click', () => {
+    document.getElementById('crearMascotaBtn').addEventListener('click', () => {
+      renderCrearMascota(usuario); // Modo Alta puro
+    });
 
-        renderCrearMascota(usuario);
+    document.getElementById('volverAdminBtn').addEventListener('click', () => {
+      renderAdminPanel(usuario);
+    });
 
+    // 🎯 CONTROLADOR DE BAJA LÓGICA (DELETE)
+    document.querySelectorAll('.inactive-btn').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
+        const nombre = e.target.getAttribute('data-nombre');
+        
+        if (confirm(`¿Estás segura de dar de baja lógica a "${nombre}" en PostgreSQL?`)) {
+          try {
+            const deleteRes = await fetch(`http://localhost:3000/api/mascotas/${id}`, {
+              method: 'DELETE'
+            });
+            if (deleteRes.ok) {
+              e.target.textContent = 'Publicación inactiva';
+              e.target.disabled = true;
+              alert("Mascota dada de baja de forma exitosa. Status: Inactiva.");
+              renderGestionMascotas(usuario); // Refrescamos vista
+            } else {
+              alert("Error al procesar la baja en el servidor.");
+            }
+          } catch (err) {
+            console.error("Error en petición DELETE:", err);
+          }
+        }
       });
+    });
 
-    document
-      .getElementById('volverAdminBtn')
-      .addEventListener('click', () => {
-
-        renderAdminPanel(usuario);
-
+    //  CONTROLADOR DE EDICIÓN (Pasa la mascota elegida al formulario)
+    document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const mascotaSeleccionada = animales.find(m => (m.id_mascota || m.id) == id);
+        if (mascotaSeleccionada) {
+          renderCrearMascota(usuario, mascotaSeleccionada); // Modo Edición
+        }
       });
-
-    const inactiveButtons =
-      document.querySelectorAll('.inactive-btn');
-
-    inactiveButtons.forEach(button => {
-
-      button.addEventListener('click', () => {
-
-        button.textContent = 'Publicación inactiva';
-
-        button.disabled = true;
-
-      });
-
     });
 
   } catch (error) {
-
     console.error(error);
-
-    alert('Error obteniendo mascotas');
-
+    alert('Error obteniendo mascotas relacionales');
   }
-
 }
 
-function renderCrearMascota(usuario) {
+// ==================================================================
+// FORMULARIO DUAL: Carga de datos y modificación activa (PUT)
+// ==================================================================
+function renderCrearMascota(usuario, mascotaAEditar = null) {
+  const esEdicion = mascotaAEditar !== null;
+  const idMascota = esEdicion ? (mascotaAEditar.id_mascota || mascotaAEditar.id) : '';
 
   loginContainer.innerHTML = `
-
-    <h1>Nueva mascota</h1>
+    <h1>${esEdicion ? `Editar a ${mascotaAEditar.nombre}` : 'Nueva mascota'}</h1>
 
     <form id="mascotaForm">
-
-      <input
-        type="text"
-        id="nombreMascota"
-        placeholder="Nombre"
-        required
-      >
+      <input type="text" id="nombreMascota" placeholder="Nombre" required value="${esEdicion ? mascotaAEditar.nombre : ''}">
 
       <select id="especieMascota" required>
-
-        <option value="">
-          Especie
-        </option>
-
-        <option value="Perro">
-          Perro
-        </option>
-
-        <option value="Gato">
-          Gato
-        </option>
-
+        <option value="">Especie</option>
+        <option value="Perro" ${esEdicion && mascotaAEditar.especie === 'Perro' ? 'selected' : ''}>Perro</option>
+        <option value="Gato" ${esEdicion && mascotaAEditar.especie === 'Gato' ? 'selected' : ''}>Gato</option>
       </select>
 
       <select id="sexoMascota" required>
-
-        <option value="">
-          Sexo
-        </option>
-
-        <option value="Macho">
-          Macho
-        </option>
-
-        <option value="Hembra">
-          Hembra
-        </option>
-
+        <option value="">Sexo</option>
+        <option value="Macho" ${esEdicion && mascotaAEditar.sexo === 'Macho' ? 'selected' : ''}>Macho</option>
+        <option value="Hembra" ${esEdicion && mascotaAEditar.sexo === 'Hembra' ? 'selected' : ''}>Hembra</option>
       </select>
 
       <select id="tamanioMascota" required>
-
-        <option value="">
-          Tamaño
-        </option>
-
-        <option value="Pequeño">
-          Pequeño
-        </option>
-
-        <option value="Mediano">
-          Mediano
-        </option>
-
-        <option value="Grande">
-          Grande
-        </option>
-
+        <option value="">Tamaño</option>
+        <option value="Pequeño" ${esEdicion && mascotaAEditar.tamanio === 'Pequeño' ? 'selected' : ''}>Pequeño</option>
+        <option value="Mediano" ${esEdicion && mascotaAEditar.tamanio === 'Mediano' ? 'selected' : ''}>Mediano</option>
+        <option value="Grande" ${esEdicion && mascotaAEditar.tamanio === 'Grande' ? 'selected' : ''}>Grande</option>
       </select>
 
-      <input
-        type="number"
-        id="edadMascota"
-        placeholder="Edad (años)"
-        min="0"
-      >
+      <input type="number" id="edadMascota" placeholder="Edad (años)" min="0" value="${esEdicion && mascotaAEditar.edad ? parseInt(mascotaAEditar.edad) : ''}">
 
-      <textarea
-        id="descripcionMascota"
-        placeholder="Descripción (salud, comportamiento, etc.)"
-        rows="3"
-      ></textarea>
+      <select id="estadoMascota" required style="margin-bottom: 15px;">
+        <option value="Disponible" ${esEdicion && mascotaAEditar.estado === 'Disponible' ? 'selected' : ''}>Disponible</option>
+        <option value="Adoptado" ${esEdicion && mascotaAEditar.estado === 'Adoptado' ? 'selected' : ''}>Adoptado</option>
+        <option value="En Tratamiento" ${esEdicion && mascotaAEditar.estado === 'En Tratamiento' ? 'selected' : ''}>En Tratamiento</option>
+      </select>
 
-      <button type="submit">
-        Guardar mascota
-      </button>
+      <textarea id="descripcionMascota" placeholder="Descripción (salud, comportamiento, etc.)" rows="3">${esEdicion ? (mascotaAEditar.descripcion || '') : ''}</textarea>
 
-      <button
-        type="button"
-        id="volverGestionBtn"
-      >
-        Volver
-      </button>
-
+      <button type="submit">${esEdicion ? 'Guardar Cambios' : 'Guardar mascota'}</button>
+      <button type="button" id="volverGestionBtn">Volver</button>
     </form>
-
   `;
 
-  const mascotaForm =
-    document.getElementById('mascotaForm');
+  const mascotaForm = document.getElementById('mascotaForm');
 
   mascotaForm.addEventListener('submit', async (event) => {
-
     event.preventDefault();
 
-    const nombre =
-      document.getElementById('nombreMascota').value;
+    const payload = {
+      nombre: document.getElementById('nombreMascota').value,
+      especie: document.getElementById('especieMascota').value,
+      sexo: document.getElementById('sexoMascota').value,
+      tamanio: document.getElementById('tamanioMascota').value,
+      edad: document.getElementById('edadMascota').value || null,
+      estado: document.getElementById('estadoMascota').value,
+      descripcion: document.getElementById('descripcionMascota').value || null,
+      usuario_id: usuario.id_usuario || usuario.id || 1
+    };
 
-    const especie =
-      document.getElementById('especieMascota').value;
-
-    const sexo =
-      document.getElementById('sexoMascota').value;
-
-    const tamanio =
-      document.getElementById('tamanioMascota').value;
-
-    const edad = document.getElementById('edadMascota').value || null;
-
-    const descripcion = document.getElementById('descripcionMascota').value || null;
+    // SELECCIÓN DINÁMICA DE MÉTODO (POST para crear, PUT para actualizar)
+    const url = esEdicion ? `http://localhost:3000/api/mascotas/${idMascota}` : 'http://localhost:3000/api/mascotas';
+    const metodo = esEdicion ? 'PUT' : 'POST';
 
     try {
-
-      const response = await fetch(
-        'http://localhost:3000/api/mascotas',
-        {
-
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
-          body: JSON.stringify({
-            nombre,
-            especie,
-            sexo,
-            tamanio,
-            edad: edad ? parseInt(edad) : null,
-            descripcion,
-            usuario_id: usuario.id_usuario || usuario.id || 1,
-            estado: 'Disponible'
-          })
-
-        }
-      );
+      const response = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-
-        alert(data.mensaje);
-
+        alert(esEdicion ? "¡Mascota modificada con éxito en PostgreSQL!" : data.mensaje);
         renderGestionMascotas(usuario);
-
       } else {
-
         alert(data.error);
-
       }
-
     } catch (error) {
-
       console.error(error);
-
-      alert('Error conectando con servidor');
-
+      alert('Error conectando con el servidor relacional');
     }
-
   });
 
-  document
-    .getElementById('volverGestionBtn')
-    .addEventListener('click', () => {
-
-      renderGestionMascotas(usuario);
-
-    });
-
+  document.getElementById('volverGestionBtn').addEventListener('click', () => {
+    renderGestionMascotas(usuario);
+  });
 }
 
 function renderAdminPanel(usuario) {

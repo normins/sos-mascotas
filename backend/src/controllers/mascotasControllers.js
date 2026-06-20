@@ -336,3 +336,83 @@ exports.obtenerTodasLasAdopciones = async (req, res, next) => {
     next(error);
   }
 };
+
+// .............................................................
+// *** Modificar una mascota existente (PUT)
+// .............................................................
+exports.actualizarMascota = async (req, res, next) => {
+  try {
+    const mascotaId = parseInt(req.params.id);
+    const { nombre, especie, sexo, edad, tamanio, estado, descripcion } = req.body;
+
+    if (!nombre || !especie || !sexo) {
+      return res.status(400).json({ error: 'Nombre, especie y sexo son obligatorios.' });
+    }
+
+    if (db.isSimulated()) {
+      let mascotasMock = global.mascotasCompartidas || [];
+      const indice = mascotasMock.findIndex(m => m.id === mascotaId);
+      if (indice === -1) return res.status(404).json({ error: "Mascota no encontrada en simulador." });
+
+      mascotasMock[indice] = { ...mascotasMock[indice], nombre, especie, sexo, edad, tamanio, estado, descripcion };
+      global.mascotasCompartidas = mascotasMock;
+
+      return res.status(200).json({ mensaje: 'Mascota actualizada (Simulador)', mascota: mascotasMock[indice] });
+    }
+
+    const queryUpdate = `
+      UPDATE mascotas
+      SET nombre = $1, especie = $2, sexo = $3, edad = $4, tamanio = $5, estado = $6, descripcion = $7
+      WHERE id = $8
+      RETURNING id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion
+    `;
+
+    const valores = [nombre, especie, sexo, edad || null, tamanio || null, estado || 'Disponible', descripcion || null, mascotaId];
+    const { rows } = await db.query(queryUpdate, valores);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La mascota real especificada no existe." });
+    }
+
+    return res.status(200).json({ mensaje: 'Mascota actualizada en Base de Datos real', mascota: rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// .............................................................
+// *** Baja lógica de una mascota (DELETE)
+// .............................................................
+exports.eliminarMascota = async (req, res, next) => {
+  try {
+    const mascotaId = parseInt(req.params.id);
+
+    if (db.isSimulated()) {
+      let mascotasMock = global.mascotasCompartidas || [];
+      const indice = mascotasMock.findIndex(m => m.id === mascotaId);
+      if (indice === -1) return res.status(404).json({ error: "Mascota no encontrada." });
+
+      mascotasMock[indice].estado = 'Inactiva';
+      global.mascotasCompartidas = mascotasMock;
+      return res.status(200).json({ mensaje: 'Mascota dada de baja (Simulador)', mascota: mascotasMock[indice] });
+    }
+
+    // Cambiamos el estado a 'Inactiva' en lugar de eliminar físicamente el registro para mantener la integridad de los datos históricos.
+    const queryDelete = `
+      UPDATE mascotas
+      SET estado = 'Inactiva'
+      WHERE id = $1
+      RETURNING id AS id_mascota, nombre, estado
+    `;
+
+    const { rows } = await db.query(queryDelete, [mascotaId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La mascota especificada no existe." });
+    }
+
+    return res.status(200).json({ mensaje: 'Mascota dada de baja correctamente en la Base de Datos real', mascota: rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};

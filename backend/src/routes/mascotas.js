@@ -24,4 +24,8 @@ router.delete('/adopciones/:solicitudId', mascotasController.cancelarAdopcion);
 // Ruta para listar todas las adopciones registradas
 router.get('/adopciones/todas', mascotasController.obtenerTodasLasAdopciones);
 
+// Rutas nuevas para complementar el ABM completo
+router.put('/:id', mascotasController.actualizarMascota);
+router.delete('/:id', mascotasController.eliminarMascota);
+
 module.exports = router
