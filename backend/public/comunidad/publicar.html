@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Publicar Mascota</title>
+
+  <!--  CSS GLOBAL -->
+  <link rel="stylesheet" href="../styles-global.css">
+
+  <!--  CSS PROPIO -->
+  <link rel="stylesheet" href="publicar.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">SOS Mascotas 🐾</div>
+
+  <ul class="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="../muro/index.html">Muro</a></li>
+    <li><a href="../donaciones/index.html">Donaciones</a></li>
+    <li><a href="../match/match.html">Match</a></li>
+    <li><a href="./index.html">Comunidad </a></li>
+    <li><a href="../voluntarios/voluntarios.html">Voluntarios</a></li>
+  </ul>
+</header>
+
+<main class="form-container">
+
+  <h2>Publicar Mascota</h2>
+
+  <form id="form">
+
+    <!-- FILA 1 -->
+    <input id="nombre" placeholder="Nombre de la mascota" required>
+    <input id="ubicacion" placeholder="Ubicación">
+
+    <!-- FILA 2 -->
+    <input id="telefono" placeholder="Teléfono de contacto" required>
+
+    <select id="tipo">
+      <option value="perdida">Mascota Perdida</option>
+      <option value="encontrada">Mascota Encontrada</option>
+    </select>
+
+    <!-- FILA 3 -->
+    <input id="imagen" placeholder="URL Imagen">
+
+    <!-- BOTÓN -->
+    <button type="submit">Publicar</button>
+
+  </form>
+
+</main>
+
+<script src="publicar.js"></script>
+
+</body>
+</html>

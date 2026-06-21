@@ -8,23 +8,18 @@ let adopcionesMock = global.adopcionesCompartidas || [];
 // .............................................................
 exports.obtenerMascotas = async (req, res, next) => {
   try {
-    // 🔍 Capturar los filtros opcionales que viajan en la URL (?especie=...&sexo=...&tamanio=...)
     const { especie, sexo } = req.query;
 
     // Comportamiento en modo simulador 
-    
     if (db.isSimulated()) {
       let mascotasMock = global.mascotasCompartidas || [];
       console.log('[Muro Mascotas] Aplicando filtros de búsqueda:', req.query);
 
-      // Empezamos con la lista completa de mascotas simuladas
       let resultadoSimulado = [...mascotasMock];
 
-      // Filtro por Especie (Perro/Gato) sin importar mayúsculas
       if (especie) {
         resultadoSimulado = resultadoSimulado.filter(m => m.especie.toLowerCase() === especie.toLowerCase().trim());
       }
-      // Filtro por Sexo (Hembra/Macho) sin importar mayúsculas
       if (sexo) {
         resultadoSimulado = resultadoSimulado.filter(m => m.sexo.toLowerCase() === sexo.toLowerCase().trim());
       }
@@ -36,15 +31,13 @@ exports.obtenerMascotas = async (req, res, next) => {
       });
     }
 
-    
     // ..........................................
     //  Comportamiento en base de datos real 
     // ..........................................
-    let queryTexto = 'SELECT * FROM mascotas WHERE 1=1';
+     let queryTexto = 'SELECT id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id, fecha_creacion FROM mascotas WHERE 1=1';
     const queryValores = [];
     let contadorParametros = 1;
 
-    // Construir dinámicamente el WHERE de SQL según lo que pida la URL
     if (especie) {
       queryTexto += ` AND LOWER(especie) = $${contadorParametros}`;
       queryValores.push(especie.toLowerCase().trim());
@@ -56,8 +49,8 @@ exports.obtenerMascotas = async (req, res, next) => {
       contadorParametros++;
     }
     
-    // Ordenar para que las últimas cargadas aparezcan primero
-    queryTexto += ' ORDER BY id_mascota DESC';
+    // Ordenamos por ID descendente para mostrar las mascotas más recientes primero
+    queryTexto += ' ORDER BY id DESC';
 
     const { rows } = await db.query(queryTexto, queryValores);
     
@@ -66,7 +59,7 @@ exports.obtenerMascotas = async (req, res, next) => {
       total: rows.length,
       mascotas: rows
     });
-    } catch (error) {
+  } catch (error) {
     next(error);
   }
 };
@@ -106,11 +99,12 @@ exports.crearMascota = async (req, res, next) => {
       });
     }
 
+    // 
     const queryTexto = `
-      INSERT INTO mascota
+      INSERT INTO mascotas
       (nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
+      RETURNING id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id
     `;
 
     const valores = [
@@ -126,6 +120,7 @@ exports.crearMascota = async (req, res, next) => {
 
     const { rows } = await db.query(queryTexto, valores);
 
+    console.log(`[BD REAL] Mascota guardada con éxito. ID: ${rows[0].id_mascota} - Nombre: ${rows[0].nombre}`);
     return res.status(201).json({
       mensaje: 'Mascota guardada en Base de Datos real',
       mascota: rows[0]
@@ -141,34 +136,29 @@ exports.crearMascota = async (req, res, next) => {
 // .............................................................
 exports.solicitarAdopcion = async (req, res, next) => {
   try {
-    const mascotaId = parseInt(req.params.id); // Capturamos el :id de la URL
+    const mascotaId = parseInt(req.params.id); 
     const { usuario_id, mensaje } = req.body;
 
-    // Validaciones básicas
     if (!usuario_id) {
       return res.status(400).json({ error: "El usuario es obligatorio para realizar la solicitud." });
     }
 
-    // Modo simulador
     if (db.isSimulated()) {
       console.log(`[Adopciones Simulador] Procesando solicitud para Mascota ID: ${mascotaId} de Usuario ID: ${usuario_id}`);
-      //  Forzar sincronización con el Seeder al entrar a la función
       let mascotasMock = global.mascotasCompartidas || [];
       let adopcionesMock = global.adopcionesCompartidas || [];
 
-      // Verificamos si la mascota existe en nuestro array de arriba
       const mascotaExiste = mascotasMock.find(m => m.id === mascotaId);
       if (!mascotaExiste) {
         return res.status(404).json({ error: "La mascota indicada no existe." });
       }
 
-      // Creamos el objeto de la solicitud simulada
       const nuevaSolicitud = {
         id: adopcionesMock.length + 1,
         mascota_id: mascotaId,
         usuario_id: parseInt(usuario_id),
         mensaje: mensaje || "Sin mensaje adicional.",
-        estado: "Pendiente", // Arranca siempre en revisión
+        estado: "Pendiente",
         fecha_creacion: new Date().toISOString()
       };
 
@@ -182,20 +172,18 @@ exports.solicitarAdopcion = async (req, res, next) => {
       });
     }
 
-    // Base de datos real (Dejamos escrita la consulta lista para el futuro)
-    // 1. Verificar primero si la mascota existe en PostgreSQL
-    const checkMascota = await db.query('SELECT id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
+     const checkMascota = await db.query('SELECT id AS id_mascota, nombre FROM mascotas WHERE id = $1', [mascotaId]);
     if (checkMascota.rows.length === 0) {
       return res.status(404).json({ error: "La mascota real indicada no existe en la Base de Datos." });
     }
 
-    // 2. Insertar la solicitud en la tabla de adopciones
+    //  NOTA: Asegurate de mapear correctamente las variables "id_usuario" y "mensaje_motivacional" en tu endpoint de adopciones real si se usan en producción.
     const queryInsert = `
-      INSERT INTO adopciones (id_mascota, id_usuario, mensaje, estado) 
+      INSERT INTO solicitud_adopcion (mascota_id, usuario_id, observaciones, estado) 
       VALUES ($1, $2, $3, $4) 
-      RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
+      RETURNING id, mascota_id AS id_mascota, usuario_id AS id_usuario, observaciones AS mensaje, estado, fecha_creacion
     `;
-    const valores = [mascotaId, id_usuario, mensaje_motivacional, 'Pendiente'];
+    const valores = [mascotaId, usuario_id, mensaje || 'Sin observaciones', 'Pendiente'];
     const { rows } = await db.query(queryInsert, valores);
 
     return res.status(201).json({
@@ -214,10 +202,9 @@ exports.solicitarAdopcion = async (req, res, next) => {
 // .............................................................
 exports.actualizarEstadoAdopcion = async (req, res, next) => {
   try {
-    const solicitudId = parseInt(req.params.solicitudId); // Capturamos el :solicitudId de la URL
-    const { nuevo_estado } = req.body; // Recibimos el estado ("Aprobada" o "Rechazada")
+    const solicitudId = parseInt(req.params.solicitudId); 
+    const { nuevo_estado } = req.body; 
 
-    // Validamos que nos manden el estado correcto
     const estadosValidos = ["Aprobada", "Rechazada", "Pendiente"];
     if (!nuevo_estado || !estadosValidos.includes(nuevo_estado)) {
       return res.status(400).json({ 
@@ -225,21 +212,16 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
       });
     }
     
-    // Comportamiento en modo simulador (actualizamos el estado en el array de adopcionesMock)
     if (db.isSimulated()) {
       console.log(`[Adopciones Simulador] Intentando actualizar Solicitud ID: ${solicitudId} a: ${nuevo_estado}`);
 
-      // Buscamos la solicitud en nuestro array simulado
       const solicitud = adopcionesMock.find(a => a.id === solicitudId);
       
       if (!solicitud) {
         return res.status(404).json({ error: "La solicitud de adopción indicada no existe en el simulador." });
       }
 
-      // Cambiamos el estado en memoria RAM
       solicitud.estado = nuevo_estado;
-      
-      // Actualizamos la variable compartida para que el controlador de usuarios también vea el cambio
       global.adopcionesCompartidas = adopcionesMock;
 
       return res.status(200).json({
@@ -248,18 +230,25 @@ exports.actualizarEstadoAdopcion = async (req, res, next) => {
       });
     }
     
-    // Comportamiento en base de datos real (actualizamos el estado en la tabla de adopciones de PostgreSQL)
     const queryUpdate = `
-      UPDATE adopciones 
+      UPDATE solicitud_adopcion 
       SET estado = $1 
       WHERE id = $2 
-      RETURNING id, id_mascota, id_usuario, mensaje, estado, fecha_creacion
+      RETURNING id, mascota_id AS id_mascota, usuario_id AS id_usuario, observaciones AS mensaje, estado, fecha_creacion
     `;
     
     const { rows } = await db.query(queryUpdate, [nuevo_estado, solicitudId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "La solicitud real indicada no existe en la Base de Datos." });
+    }
+
+    if (nuevo_estado === 'Aprobada') {
+      const idMascotaAprobada = rows[0].id_mascota;
+      
+      console.log(`Solicitud aprobada. Cambiando estado de Mascota ID: ${idMascotaAprobada} a 'Adoptado'`);
+      
+      await db.query('UPDATE mascotas SET estado = $1 WHERE id = $2', ['Adoptado', idMascotaAprobada]);
     }
 
     return res.status(200).json({
@@ -279,25 +268,16 @@ exports.cancelarAdopcion = async (req, res, next) => {
   try {
     const solicitudId = parseInt(req.params.solicitudId);
 
-    // ..........................................
-    // COMPORTAMIENTO EN MODO SIMULADOR
-    // ..........................................
     if (db.isSimulated()) {
       console.log(`[Adopciones Simulador] Intentando dar de baja la Solicitud ID: ${solicitudId}`);
-      // Sincronizamos con el array global de adopciones
       let adopcionesMock = global.adopcionesCompartidas || [];
-      // Buscamos la posición de la solicitud en el array
       const indice = adopcionesMock.findIndex(a => a.id === solicitudId);
 
       if (indice === -1) {
         return res.status(404).json({ error: "La solicitud que deseas cancelar no existe en el simulador." });
       }
 
-      // En vez de borrarla por completo (lo que alteraría los IDs de los demás), 
-      // la buena práctica es cambiar su estado a "Cancelada"
       adopcionesMock[indice].estado = "Cancelada";
-
-      // Sincronizamos la memoria compartida con usuarios
       global.adopcionesCompartidas = adopcionesMock;
 
       return res.status(200).json({
@@ -306,16 +286,11 @@ exports.cancelarAdopcion = async (req, res, next) => {
       });
     }
 
-    // ...........................................
-    // COMPORTAMIENTO EN BASE DE DATOS REAL
-    // ...........................................
-    // En la base de datos real aplicamos la misma lógica (un UPDATE de estado)
-    // Vamos por la opción de actualizar estado a 'Cancelada' para no perder historial de auditoría:
     const queryDelete = `
-      UPDATE adopciones 
+      UPDATE solicitud_adopcion 
       SET estado = 'Cancelada' 
       WHERE id = $1 
-      RETURNING id, id_mascota, id_usuario, estado
+      RETURNING id, mascota_id AS id_mascota, usuario_id AS id_usuario, estado
     `;
     
     const { rows } = await db.query(queryDelete, [solicitudId]);
@@ -339,13 +314,8 @@ exports.cancelarAdopcion = async (req, res, next) => {
 // .............................................................
 exports.obtenerTodasLasAdopciones = async (req, res, next) => {
   try {
-    // ..........................................
-    // COMPORTAMIENTO EN MODO SIMULADOR
-    //...........................................
     if (db.isSimulated()) {
-      // Sincronizamos con el array global de adopciones
       let adopcionesMock = global.adopcionesCompartidas || [];
-      
       console.log(`[Adopciones Simulador] Listando solicitudes. Total: ${adopcionesMock.length}`);
       
       return res.status(200).json({
@@ -355,12 +325,10 @@ exports.obtenerTodasLasAdopciones = async (req, res, next) => {
       });
     }
 
-    // ..........................................
-    // COMPORTAMIENTO EN BASE DE DATOS REAL
-    // ..........................................
+    // 🔧 CORREGIDO: Ajustada la consulta hacia la tabla real "solicitud_adopcion"
     const queryReal = `
-      SELECT id, id_mascota as "mascotaId", id_usuario as "usuarioId", mensaje, estado, fecha_creacion
-      FROM solicitudes_adopcion
+      SELECT id, mascota_id as "mascotaId", usuario_id as "usuarioId", observaciones as mensaje, estado, fecha_creacion
+      FROM solicitud_adopcion
       ORDER BY fecha_creacion DESC
     `;
     const { rows } = await db.query(queryReal);
@@ -371,6 +339,86 @@ exports.obtenerTodasLasAdopciones = async (req, res, next) => {
       adopciones: rows
     });
 
+  } catch (error) {
+    next(error);
+  }
+};
+
+// .............................................................
+// *** Modificar una mascota existente (PUT)
+// .............................................................
+exports.actualizarMascota = async (req, res, next) => {
+  try {
+    const mascotaId = parseInt(req.params.id);
+    const { nombre, especie, sexo, edad, tamanio, estado, descripcion } = req.body;
+
+    if (!nombre || !especie || !sexo) {
+      return res.status(400).json({ error: 'Nombre, especie y sexo son obligatorios.' });
+    }
+
+    if (db.isSimulated()) {
+      let mascotasMock = global.mascotasCompartidas || [];
+      const indice = mascotasMock.findIndex(m => m.id === mascotaId);
+      if (indice === -1) return res.status(404).json({ error: "Mascota no encontrada en simulador." });
+
+      mascotasMock[indice] = { ...mascotasMock[indice], nombre, especie, sexo, edad, tamanio, estado, descripcion };
+      global.mascotasCompartidas = mascotasMock;
+
+      return res.status(200).json({ mensaje: 'Mascota actualizada (Simulador)', mascota: mascotasMock[indice] });
+    }
+
+    const queryUpdate = `
+      UPDATE mascotas
+      SET nombre = $1, especie = $2, sexo = $3, edad = $4, tamanio = $5, estado = $6, descripcion = $7
+      WHERE id = $8
+      RETURNING id AS id_mascota, nombre, especie, sexo, edad, tamanio, estado, descripcion
+    `;
+
+    const valores = [nombre, especie, sexo, edad || null, tamanio || null, estado || 'Disponible', descripcion || null, mascotaId];
+    const { rows } = await db.query(queryUpdate, valores);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La mascota real especificada no existe." });
+    }
+
+    return res.status(200).json({ mensaje: 'Mascota actualizada en Base de Datos real', mascota: rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// .............................................................
+// *** Baja lógica de una mascota (DELETE)
+// .............................................................
+exports.eliminarMascota = async (req, res, next) => {
+  try {
+    const mascotaId = parseInt(req.params.id);
+
+    if (db.isSimulated()) {
+      let mascotasMock = global.mascotasCompartidas || [];
+      const indice = mascotasMock.findIndex(m => m.id === mascotaId);
+      if (indice === -1) return res.status(404).json({ error: "Mascota no encontrada." });
+
+      mascotasMock[indice].estado = 'Inactiva';
+      global.mascotasCompartidas = mascotasMock;
+      return res.status(200).json({ mensaje: 'Mascota dada de baja (Simulador)', mascota: mascotasMock[indice] });
+    }
+
+    // Cambiamos el estado a 'Inactiva' en lugar de eliminar físicamente el registro para mantener la integridad de los datos históricos.
+    const queryDelete = `
+      UPDATE mascotas
+      SET estado = 'Inactiva'
+      WHERE id = $1
+      RETURNING id AS id_mascota, nombre, estado
+    `;
+
+    const { rows } = await db.query(queryDelete, [mascotaId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "La mascota especificada no existe." });
+    }
+
+    return res.status(200).json({ mensaje: 'Mascota dada de baja correctamente en la Base de Datos real', mascota: rows[0] });
   } catch (error) {
     next(error);
   }

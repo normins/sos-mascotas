@@ -1,0 +1,65 @@
+/* FONDO GLOBAL */
+body {
+  background-color: #0D0D0D;
+  color: #F4F4F4;
+  font-family: 'Inter', sans-serif;
+}
+
+/* CONTENEDOR CENTRADO */
+.form-container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 30px;
+
+  background-color: #151515;
+  border-radius: 16px;
+  border: 1px solid #222;
+}
+
+/* TITULO */
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* FORM GRID */
+#form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* INPUTS */
+input,
+select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+
+  background-color: #1F1F1F;
+  color: #F4F4F4;
+}
+
+/* INPUT FULL WIDTH */
+#imagen {
+  grid-column: span 1;
+}
+
+/* BOTÓN */
+button {
+  grid-column: span 1;
+  padding: 12px;
+
+  background-color: #304FFB;
+  color: white;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+
+/* HOVER */
+button:hover {
+  background-color: #182062;
+}

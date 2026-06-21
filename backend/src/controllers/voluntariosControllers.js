@@ -16,7 +16,7 @@ exports.registrarVoluntario = async (req, res, next) => {
     // Modo simulador
     if (db.isSimulated()) {
       const nuevoVoluntario = {
-        id: voluntariosMock.length + 1,
+        id_usuario: voluntariosMock.length + 1, // 🔧 Sincronizado con id_usuario para el Frontend
         nombre,
         email,
         telefono: telefono || null,
@@ -35,18 +35,18 @@ exports.registrarVoluntario = async (req, res, next) => {
     }
 
     // Base de datos real
-    // Primero se crea el usuario base
     const bcrypt = require('bcrypt');
     const passwordTemp = Math.random().toString(36).slice(-10);
     const passwordHash = await bcrypt.hash(passwordTemp, 10);
 
     const queryUsuario = `
-      INSERT INTO usuario (nombre, email, password, rol)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO usuario (nombre, email, password, rol, telefono)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id
     `;
 
-    const { rows: usuarioRows } = await db.query(queryUsuario, [nombre, email, passwordHash, 'voluntario']);
+    // 🔧 Nota: Agregado el teléfono al INSERT de usuario base para que no se pierda en Postgre real
+    const { rows: usuarioRows } = await db.query(queryUsuario, [nombre, email, passwordHash, 'voluntario', telefono || null]);
     const usuario_id = usuarioRows[0].id;
 
     // Luego se registra en la tabla voluntario
@@ -70,7 +70,7 @@ exports.registrarVoluntario = async (req, res, next) => {
     return res.status(201).json({
       mensaje: 'Voluntario registrado en Base de Datos real',
       voluntario: {
-        id: usuario_id,
+        id_usuario: usuario_id, // 🔧 Sincronizado para el Frontend
         nombre,
         email,
         telefono,
@@ -95,9 +95,9 @@ exports.obtenerVoluntarios = async (req, res, next) => {
       });
     }
 
-    // Base de datos real
+    // Base de datos real - Impecable mapeo con INNER JOINs
     const querySelect = `
-      SELECT u.id, u.nombre, u.email, u.telefono, tv.nombre as tipo, tv.descripcion as disponibilidad
+      SELECT u.id as id_usuario, u.nombre, u.email, u.telefono, tv.nombre as tipo, tv.descripcion as disponibilidad
       FROM voluntario v
       INNER JOIN usuario u ON v.id = u.id
       LEFT JOIN tipo_voluntariado tv ON v.id = tv.voluntario_id
@@ -127,7 +127,7 @@ exports.obtenerVoluntarioPorId = async (req, res, next) => {
 
     // Modo simulador
     if (db.isSimulated()) {
-      const voluntario = voluntariosMock.find(v => v.id === id);
+      const voluntario = voluntariosMock.find(v => v.id_usuario === id);
       if (!voluntario) {
         return res.status(404).json({ error: 'Voluntario no encontrado.' });
       }
@@ -139,7 +139,7 @@ exports.obtenerVoluntarioPorId = async (req, res, next) => {
 
     // Base de datos real
     const querySelect = `
-      SELECT u.id, u.nombre, u.email, u.telefono, tv.nombre as tipo, tv.descripcion as disponibilidad
+      SELECT u.id as id_usuario, u.nombre, u.email, u.telefono, tv.nombre as tipo, tv.descripcion as disponibilidad
       FROM voluntario v
       INNER JOIN usuario u ON v.id = u.id
       LEFT JOIN tipo_voluntariado tv ON v.id = tv.voluntario_id

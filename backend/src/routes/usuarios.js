@@ -16,4 +16,7 @@ router.get('/:usuarioId/adopciones', usuariosController.obtenerAdopcionesUsuario
 // Guarda o actualiza las preferencias extendidas del adoptante (RF05)
 router.post('/perfil', usuariosController.guardarPerfilAdopcion);
 
+// Recupera las preferencias cargadas para rellenar el formulario automáticamente
+router.get('/perfil/:usuarioId', usuariosController.obtenerPerfilAdopcion);
+
 module.exports = router;

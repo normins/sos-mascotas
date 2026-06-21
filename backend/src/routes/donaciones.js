@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const donacionesController = require('../controllers/donacionesControllers');
-
 // POST /api/donaciones - Crear donación
 router.post('/', donacionesController.crearDonacion);
 

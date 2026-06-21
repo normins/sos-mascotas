@@ -26,9 +26,11 @@ showLogin.addEventListener('click', () => {
 
 
 
-function renderPerfilForm(usuario) {
-  // Buscamos si ya existen datos guardados para este usuario específico
-  const perfilGuardado = JSON.parse(localStorage.getItem(`perfilAdopcion_${usuario.email}`)) || {};
+// Renderiza, precarga (mapeo Postgres real) y guarda preferencias
+async function renderPerfilForm(usuario) {
+  const userId = usuario.id_usuario || usuario.id || (usuario.usuario && (usuario.usuario.id_usuario || usuario.usuario.id));
+
+  console.log("[DEBUG] ID detectado para la consulta:", userId);
 
   loginContainer.innerHTML = `
     <h1>Preferencias de adopción</h1>
@@ -38,380 +40,316 @@ function renderPerfilForm(usuario) {
       
       <label for="tipoVivienda" style="font-size: 14px; color: #bbb; margin-top: 10px;">Tipo de Vivienda:</label>
       <select id="tipoVivienda" required style="margin-top: 5px;">
-        <option value="">Seleccione una opción</option>
-        <option value="Casa" ${perfilGuardado.tipoVivienda === 'Casa' ? 'selected' : ''}>Casa</option>
-        <option value="Departamento" ${perfilGuardado.tipoVivienda === 'Departamento' ? 'selected' : ''}>Departamento</option>
-        <option value="PH" ${perfilGuardado.tipoVivienda === 'PH' ? 'selected' : ''}>PH</option>
+        <option value="">Seleccionar...</option>
+        <option value="Casa">Casa</option>
+        <option value="Departamento">Departamento</option>
+        <option value="Quinta/Campo">Quinta/Campo</option>
       </select>
 
-      <label for="tienePatio" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Tiene patio/balcón seguro?</label>
+      <label for="tienePatio" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Tiene patio/balcón cerrado?:</label>
       <select id="tienePatio" required style="margin-top: 5px;">
-        <option value="">Seleccione una opción</option>
-        <option value="Sí" ${perfilGuardado.tienePatio === 'Sí' ? 'selected' : ''}>Sí</option>
-        <option value="No" ${perfilGuardado.tienePatio === 'No' ? 'selected' : ''}>No</option>
+        <option value="">Seleccionar...</option>
+        <option value="true">Sí</option>
+        <option value="false">No</option>
       </select>
 
-      <label for="experiencia" style="font-size: 14px; color: #bbb; margin-top: 10px;">Experiencia previa con animales:</label>
+      <label for="experiencia" style="font-size: 14px; color: #bbb; margin-top: 10px;">Experiencia previa con mascotas:</label>
       <select id="experiencia" required style="margin-top: 5px;">
-        <option value="">Seleccione una opción</option>
-        <option value="Sin experiencia" ${perfilGuardado.experiencia === 'Sin experiencia' ? 'selected' : ''}>Sin experiencia</option>
-        <option value="Principiante" ${perfilGuardado.experiencia === 'Principiante' ? 'selected' : ''}>Principiante (Tuve alguna vez)</option>
-        <option value="Avanzado" ${perfilGuardado.experiencia === 'Avanzado' ? 'selected' : ''}>Avanzado (Tengo conocimiento/Fui transitante)</option>
+        <option value="">Seleccionar...</option>
+        <option value="Ninguna">Ninguna</option>
+        <option value="Basica">Básica (tuve alguna vez)</option>
+        <option value="Avanzada">Avanzada (sé entrenar/cuidar casos complejos)</option>
       </select>
 
-      <label for="otrasMascotas" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Convive con otros animales actualmente?</label>
+      <label for="otrasMascotas" style="font-size: 14px; color: #bbb; margin-top: 10px;">¿Tiene otras mascotas actualmente?:</label>
       <select id="otrasMascotas" required style="margin-top: 5px;">
-        <option value="">Seleccione una opción</option>
-        <option value="Sí" ${perfilGuardado.otrasMascotas === 'Sí' ? 'selected' : ''}>Sí</option>
-        <option value="No" ${perfilGuardado.otrasMascotas === 'No' ? 'selected' : ''}>No</option>
+        <option value="">Seleccionar...</option>
+        <option value="No">No, ninguna</option>
+        <option value="Perros">Sí, perro/s</option>
+        <option value="Gatos">Sí, gato/s</option>
+        <option value="Ambos">Sí, perros y gatos</option>
       </select>
 
-      <label for="preferenciaTamano" style="font-size: 14px; color: #bbb; margin-top: 10px;">Preferencia de tamaño de la mascota:</label>
-      <select id="preferenciaTamano" required style="margin-top: 5px;">
-        <option value="">Seleccione una opción</option>
-        <option value="Pequeño" ${perfilGuardado.preferenciaTamano === 'Pequeño' ? 'selected' : ''}>Pequeño</option>
-        <option value="Mediano" ${perfilGuardado.preferenciaTamano === 'Mediano' ? 'selected' : ''}>Mediano</option>
-        <option value="Grande" ${perfilGuardado.preferenciaTamano === 'Grande' ? 'selected' : ''}>Grande</option>
+      <label for="preferenciaTamanio" style="font-size: 14px; color: #bbb; margin-top: 10px;">Preferencia de tamaño de la mascota:</label>
+      <select id="preferenciaTamanio" required style="margin-top: 5px;">
+        <option value="">Seleccionar...</option>
+        <option value="Pequeño">Pequeño</option>
+        <option value="Mediano">Mediano</option>
+        <option value="Grande">Grande</option>
+        <option value="Cualquiera">Me da igual el tamaño</option>
       </select>
 
-      <button type="submit" style="margin-top: 20px;">Guardar preferencias</button>
-      <button type="button" id="volverPerfilBtn">Volver</button>
+      <button type="submit" style="margin-top: 20px;">Guardar Preferencias</button>
+      
+      <button type="button" id="btnVolverPerfil" class="btn-back" style="margin-top: 10px; background-color: #555; color: white;">Volver</button>
     </form>
+    
+    <div id="perfilMessage" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
   `;
 
-  // Listener para capturar el envío del nuevo set de datos
-  const perfilForm = document.getElementById('perfilForm');
-  perfilForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const perfilData = {
-      id_usuario: usuario.id_usuario || usuario.id || 1,
-      tipo_vivienda: document.getElementById('tipoVivienda').value,
-      tiene_patio: document.getElementById('tienePatio').value === 'Sí',
-      experiencia: document.getElementById('experiencia').value,
-      otras_mascotas: document.getElementById('otrasMascotas').value === 'Sí',
-      preferencia_tamanio: document.getElementById('preferenciaTamano').value
-    };
-
-    console.log(" Enviando preferencias al servidor...", perfilData);
-
-    //  Conexión por red hacia Express
-    fetch('/api/usuarios/perfil', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(perfilData)
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Error en la respuesta del servidor');
-      return response.json();
-    })
-    .then(resultado => {
-      console.log("Servidor respondió con éxito:", resultado);
-      
-      // Resguardo local para persistencia inmediata de la interfaz
-      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
-      
-      alert(`¡Preferencias sincronizadas con el servidor! 🐾\n${resultado.mensaje}`);
-      renderAdoptantePanel(usuario);
-    })
-    .catch(error => {
-      console.error("Falló el guardado en el backend, aplicando respaldo local:", error);
-      alert("No se pudo conectar con el servidor temporalmente, pero tus cambios se guardaron localmente por seguridad.");
-      
-      localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
-    renderAdoptantePanel(usuario);
-    });
+  // Acción del botón Volver
+  document.getElementById('btnVolverPerfil').addEventListener('click', () => {
+    window.location.href = '../index.html'; 
   });
 
-  document.getElementById('volverPerfilBtn').addEventListener('click', () => {
-    renderAdoptantePanel(usuario);
+  if (!userId) {
+    console.error("No se pudo determinar el ID del usuario.");
+    return;
+  }
+
+  // 🎯 PARTE A: Consulta de precarga mapeando los nombres reales de la tabla de Postgres
+  try {
+    const resBD = await fetch(`http://localhost:3000/api/usuarios/perfil/${userId}`);
+    const dataBD = await resBD.json();
+
+    if (dataBD && dataBD.perfil) {
+      console.log("[Precarga] Mapeando datos reales:", dataBD.perfil);
+      
+      document.getElementById('tipoVivienda').value = dataBD.perfil.tipo_vivienda || '';
+      document.getElementById('tienePatio').value = dataBD.perfil.tiene_patio !== undefined ? String(dataBD.perfil.tiene_patio) : '';
+      
+      // ✨ CORRECCIÓN DE CAMPOS: Mapeamos con el guion bajo correspondiente a la BD física
+      document.getElementById('experiencia').value = dataBD.perfil.experiencia_previa || dataBD.perfil.experiencia || '';
+      document.getElementById('otrasMascotas').value = dataBD.perfil.otras_mascotas || '';
+      document.getElementById('preferenciaTamanio').value = dataBD.perfil.preferencia_tamanio || '';
+    }
+  } catch (err) {
+    console.error("Error al precargar:", err);
+  }
+
+  // 🎯 PARTE B: Guardado físico al hacer submit
+  const perfilForm = document.getElementById('perfilForm');
+  const perfilMessage = document.getElementById('perfilMessage');
+
+  perfilForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const perfilData = {
+      id_usuario: userId,
+      tipo_vivienda: document.getElementById('tipoVivienda').value,
+      tiene_patio: document.getElementById('tienePatio').value === 'true',
+      experiencia: document.getElementById('experiencia').value,
+      otras_mascotas: document.getElementById('otrasMascotas').value,
+      preferencia_tamanio: document.getElementById('preferenciaTamanio').value
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/api/usuarios/perfil', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(perfilData)
+      });
+
+      const resultado = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem(`perfilAdopcion_${usuario.email}`, JSON.stringify(perfilData));
+        alert("¡Preferencias guardadas con éxito en PostgreSQL! 🐾");
+        window.location.href = '../index.html';
+        perfilMessage.style.color = 'lightgreen';
+        perfilMessage.textContent = "Sincronizado con la base de datos física.";
+      } else {
+        perfilMessage.style.color = 'salmon';
+        perfilMessage.textContent = resultado.error || "Error al guardar.";
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      perfilMessage.style.color = 'salmon';
+      perfilMessage.textContent = "Error de conexión con el servidor.";
+    }
   });
 }
 
 
-
+// ==================================================================
+//  Listar mascotas y Gestión de baja lógica
+// ==================================================================
 async function renderGestionMascotas(usuario) {
-
   try {
+    const response = await fetch('http://localhost:3000/api/mascotas');
+    const data = await response.json();
+    
+    // Postgres nos devuelve la lista dentro de data.mascotas
+    let animales = data.mascotas || [];
 
-    const response = await fetch('http://localhost:3000/api/mascotas'
-    );
-
-    let mascotas = await response.json();
-
-    // Si lo que vuelve no es una lista, la convertimos en una lista vacía
-    if (!Array.isArray(mascotas)) {
-      mascotas = [];
-    } 
-
+    // Filtramos las 'Inactivas' para que actúe como una baja lógica real en la interfaz
+    const visibles = animales.filter(m => m.estado !== 'Inactiva');
 
     loginContainer.innerHTML = `
-
       <h1>Gestión de mascotas</h1>
-
       <div class="dashboard-buttons">
-
-        <button id="crearMascotaBtn">
-          Nueva mascota
-        </button>
-
-        <button id="volverAdminBtn">
-          Volver
-        </button>
-
+        <button id="crearMascotaBtn">Nueva mascota</button>
+        <button id="volverAdminBtn">Volver</button>
       </div>
 
       <div class="mascotas-list">
+        ${visibles.map(mascota => {
+          const idActual = mascota.id_mascota || mascota.id;
+          const urlFoto = mascota.especie.toLowerCase() === 'perro' 
+            ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500' // Foto fija de perro
+            : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500'; // Foto fija de gato
 
-        ${mascotas.map(mascota => `
-
-          <div class="mascota-card">
-
-            <img
-              src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
-              class="mascota-img"
-            >
-            <h3>${mascota.nombre}</h3>
-
-            <p>${mascota.especie}</p>
-
-            <p>${mascota.sexo}</p>
-
-            <p>${mascota.tamanio || mascota.raza || 'Mediano'}</p>
-
-            <button
-              class="inactive-btn"
-            >
-              Marcar inactiva
-            </button>
-
-          </div>
-
-        `).join('')}
-
+        return `
+            <div class="mascota-card">
+              <img src="${urlFoto}" alt="${mascota.nombre}" class="match-img" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+              <h3>${mascota.nombre}</h3>
+              <p>${mascota.especie}</p>
+              <p>${mascota.sexo}</p>
+              <p>${mascota.tamanio || 'Mediano'}</p>
+              <p style="color: #ffb74d; font-size: 13px; font-weight: bold; margin: 5px 0;">Estado: ${mascota.estado}</p>
+              
+              <div style="display: flex; gap: 5px; width: 100%; margin-top: 10px;">
+                <button class="edit-btn" data-id="${idActual}" style="flex: 1; padding: 8px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Editar</button>
+                <button class="inactive-btn" data-id="${idActual}" data-nombre="${mascota.nombre}" style="flex: 1;">Eliminar</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
-
     `;
 
-    document
-      .getElementById('crearMascotaBtn')
-      .addEventListener('click', () => {
+    document.getElementById('crearMascotaBtn').addEventListener('click', () => {
+      renderCrearMascota(usuario); // Modo Alta puro
+    });
 
-        renderCrearMascota(usuario);
+    document.getElementById('volverAdminBtn').addEventListener('click', () => {
+      renderAdminPanel(usuario);
+    });
 
+    //  CONTROLADOR DE BAJA LÓGICA (DELETE)
+    document.querySelectorAll('.inactive-btn').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
+        const nombre = e.target.getAttribute('data-nombre');
+        
+        if (confirm(`¿Estás segura de dar de baja lógica a "${nombre}" en PostgreSQL?`)) {
+          try {
+            const deleteRes = await fetch(`http://localhost:3000/api/mascotas/${id}`, {
+              method: 'DELETE'
+            });
+            if (deleteRes.ok) {
+              e.target.textContent = 'Publicación inactiva';
+              e.target.disabled = true;
+              alert("Mascota dada de baja de forma exitosa. Status: Inactiva.");
+              renderGestionMascotas(usuario); // Refrescamos vista
+            } else {
+              alert("Error al procesar la baja en el servidor.");
+            }
+          } catch (err) {
+            console.error("Error en petición DELETE:", err);
+          }
+        }
       });
+    });
 
-    document
-      .getElementById('volverAdminBtn')
-      .addEventListener('click', () => {
-
-        renderAdminPanel(usuario);
-
+    //  CONTROLADOR DE EDICIÓN (Pasa la mascota elegida al formulario)
+    document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const mascotaSeleccionada = animales.find(m => (m.id_mascota || m.id) == id);
+        if (mascotaSeleccionada) {
+          renderCrearMascota(usuario, mascotaSeleccionada); // Modo Edición
+        }
       });
-
-    const inactiveButtons =
-      document.querySelectorAll('.inactive-btn');
-
-    inactiveButtons.forEach(button => {
-
-      button.addEventListener('click', () => {
-
-        button.textContent = 'Publicación inactiva';
-
-        button.disabled = true;
-
-      });
-
     });
 
   } catch (error) {
-
     console.error(error);
-
-    alert('Error obteniendo mascotas');
-
+    alert('Error obteniendo mascotas relacionales');
   }
-
 }
 
-function renderCrearMascota(usuario) {
+// ==================================================================
+// FORMULARIO DUAL: Carga de datos y modificación activa (PUT)
+// ==================================================================
+function renderCrearMascota(usuario, mascotaAEditar = null) {
+  const esEdicion = mascotaAEditar !== null;
+  const idMascota = esEdicion ? (mascotaAEditar.id_mascota || mascotaAEditar.id) : '';
 
   loginContainer.innerHTML = `
-
-    <h1>Nueva mascota</h1>
+    <h1>${esEdicion ? `Editar a ${mascotaAEditar.nombre}` : 'Nueva mascota'}</h1>
 
     <form id="mascotaForm">
-
-      <input
-        type="text"
-        id="nombreMascota"
-        placeholder="Nombre"
-        required
-      >
+      <input type="text" id="nombreMascota" placeholder="Nombre" required value="${esEdicion ? mascotaAEditar.nombre : ''}">
 
       <select id="especieMascota" required>
-
-        <option value="">
-          Especie
-        </option>
-
-        <option value="Perro">
-          Perro
-        </option>
-
-        <option value="Gato">
-          Gato
-        </option>
-
+        <option value="">Especie</option>
+        <option value="Perro" ${esEdicion && mascotaAEditar.especie === 'Perro' ? 'selected' : ''}>Perro</option>
+        <option value="Gato" ${esEdicion && mascotaAEditar.especie === 'Gato' ? 'selected' : ''}>Gato</option>
       </select>
 
       <select id="sexoMascota" required>
-
-        <option value="">
-          Sexo
-        </option>
-
-        <option value="Macho">
-          Macho
-        </option>
-
-        <option value="Hembra">
-          Hembra
-        </option>
-
+        <option value="">Sexo</option>
+        <option value="Macho" ${esEdicion && mascotaAEditar.sexo === 'Macho' ? 'selected' : ''}>Macho</option>
+        <option value="Hembra" ${esEdicion && mascotaAEditar.sexo === 'Hembra' ? 'selected' : ''}>Hembra</option>
       </select>
 
       <select id="tamanioMascota" required>
-
-        <option value="">
-          Tamaño
-        </option>
-
-        <option value="Pequeño">
-          Pequeño
-        </option>
-
-        <option value="Mediano">
-          Mediano
-        </option>
-
-        <option value="Grande">
-          Grande
-        </option>
-
+        <option value="">Tamaño</option>
+        <option value="Pequeño" ${esEdicion && mascotaAEditar.tamanio === 'Pequeño' ? 'selected' : ''}>Pequeño</option>
+        <option value="Mediano" ${esEdicion && mascotaAEditar.tamanio === 'Mediano' ? 'selected' : ''}>Mediano</option>
+        <option value="Grande" ${esEdicion && mascotaAEditar.tamanio === 'Grande' ? 'selected' : ''}>Grande</option>
       </select>
 
-      <input
-        type="number"
-        id="edadMascota"
-        placeholder="Edad (años)"
-        min="0"
-      >
+      <input type="number" id="edadMascota" placeholder="Edad (años)" min="0" value="${esEdicion && mascotaAEditar.edad ? parseInt(mascotaAEditar.edad) : ''}">
 
-      <textarea
-        id="descripcionMascota"
-        placeholder="Descripción (salud, comportamiento, etc.)"
-        rows="3"
-      ></textarea>
+      <select id="estadoMascota" required style="margin-bottom: 15px;">
+        <option value="Disponible" ${esEdicion && mascotaAEditar.estado === 'Disponible' ? 'selected' : ''}>Disponible</option>
+        <option value="Adoptado" ${esEdicion && mascotaAEditar.estado === 'Adoptado' ? 'selected' : ''}>Adoptado</option>
+        <option value="En Tratamiento" ${esEdicion && mascotaAEditar.estado === 'En Tratamiento' ? 'selected' : ''}>En Tratamiento</option>
+      </select>
 
-      <button type="submit">
-        Guardar mascota
-      </button>
+      <textarea id="descripcionMascota" placeholder="Descripción (salud, comportamiento, etc.)" rows="3">${esEdicion ? (mascotaAEditar.descripcion || '') : ''}</textarea>
 
-      <button
-        type="button"
-        id="volverGestionBtn"
-      >
-        Volver
-      </button>
-
+      <button type="submit">${esEdicion ? 'Guardar Cambios' : 'Guardar mascota'}</button>
+      <button type="button" id="volverGestionBtn">Volver</button>
     </form>
-
   `;
 
-  const mascotaForm =
-    document.getElementById('mascotaForm');
+  const mascotaForm = document.getElementById('mascotaForm');
 
   mascotaForm.addEventListener('submit', async (event) => {
-
     event.preventDefault();
 
-    const nombre =
-      document.getElementById('nombreMascota').value;
+    const payload = {
+      nombre: document.getElementById('nombreMascota').value,
+      especie: document.getElementById('especieMascota').value,
+      sexo: document.getElementById('sexoMascota').value,
+      tamanio: document.getElementById('tamanioMascota').value,
+      edad: document.getElementById('edadMascota').value || null,
+      estado: document.getElementById('estadoMascota').value,
+      descripcion: document.getElementById('descripcionMascota').value || null,
+      usuario_id: usuario.id_usuario || usuario.id || 1
+    };
 
-    const especie =
-      document.getElementById('especieMascota').value;
-
-    const sexo =
-      document.getElementById('sexoMascota').value;
-
-    const tamanio =
-      document.getElementById('tamanioMascota').value;
-
-    const edad = document.getElementById('edadMascota').value || null;
-
-    const descripcion = document.getElementById('descripcionMascota').value || null;
+    // SELECCIÓN DINÁMICA DE MÉTODO (POST para crear, PUT para actualizar)
+    const url = esEdicion ? `http://localhost:3000/api/mascotas/${idMascota}` : 'http://localhost:3000/api/mascotas';
+    const metodo = esEdicion ? 'PUT' : 'POST';
 
     try {
-
-      const response = await fetch(
-        'http://localhost:3000/api/mascotas',
-        {
-
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
-          body: JSON.stringify({
-            nombre,
-            especie,
-            sexo,
-            tamanio,
-            edad: edad ? parseInt(edad) : null,
-            descripcion,
-            usuario_id: usuario.id_usuario || usuario.id || 1,
-            estado: 'Disponible'
-          })
-
-        }
-      );
+      const response = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-
-        alert(data.mensaje);
-
+        alert(esEdicion ? "¡Mascota modificada con éxito en PostgreSQL!" : data.mensaje);
         renderGestionMascotas(usuario);
-
       } else {
-
         alert(data.error);
-
       }
-
     } catch (error) {
-
       console.error(error);
-
-      alert('Error conectando con servidor');
-
+      alert('Error conectando con el servidor relacional');
     }
-
   });
 
-  document
-    .getElementById('volverGestionBtn')
-    .addEventListener('click', () => {
-
-      renderGestionMascotas(usuario);
-
-    });
-
+  document.getElementById('volverGestionBtn').addEventListener('click', () => {
+    renderGestionMascotas(usuario);
+  });
 }
 
 function renderAdminPanel(usuario) {
@@ -424,10 +362,14 @@ function renderAdminPanel(usuario) {
       Bienvenida ${usuario.nombre}
     </p>
 
-    <div class="dashboard-buttons">
+    <div class="dashboard-buttons" style="display: flex; flex-direction: column; gap: 10px;">
 
       <button id="managePetsBtn">
         Gestionar mascotas
+      </button>
+
+      <button id="manageRequestsBtn" style="background-color: #ff9800; color: white;">
+        Revisar Solicitudes
       </button>
 
       <button id="logoutBtn">
@@ -446,11 +388,120 @@ function renderAdminPanel(usuario) {
 
     });
 
+  // Abre el panel de control de adopciones
+  document
+    .getElementById('manageRequestsBtn')
+    .addEventListener('click', () => {
+
+      renderControlSolicitudes(usuario);
+
+  });
+
   document
     .getElementById('logoutBtn')
     .addEventListener('click', logout);
 
 }
+
+
+// 📋 PANEL DE CONTROL: Auditoría de solicitudes de adopción (PATCH)
+async function renderControlSolicitudes(usuario) {
+  try {
+    // Buscamos todas las solicitudes reales usando la ruta GET del backend
+    const response = await fetch('http://localhost:3000/api/mascotas/adopciones/todas');
+    const data = await response.json();
+    
+    const solicitudes = data.adopciones || [];
+
+    loginContainer.innerHTML = `
+      <h1>Solicitudes de Adopción</h1>
+      <p class="welcome-text">Auditoría y control de postulaciones en PostgreSQL</p>
+      
+      <div class="dashboard-buttons" style="margin-bottom: 15px;">
+        <button id="volverAdminDesdeSolBtn" style="background-color: #555;">Volver al Panel</button>
+      </div>
+
+      <div class="solicitudes-list" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+        ${solicitudes.length === 0 
+          ? `<p style="color: #888; text-align: center;">No hay solicitudes de adopción registradas en el sistema.</p>`
+          : solicitudes.map(sol => `
+            <div class="solicitud-card" style="background: #222; border-left: 4px solid #ff9800; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                  <h3 style="margin: 0; color: #fff; font-size: 16px;">Solicitud #${sol.id}</h3>
+                  <p style="margin: 2px 0; font-size: 13px; color: #aaa;"><strong>ID Adoptante:</strong> ${sol.usuarioId || sol.id_usuario}</p>
+                  <p style="margin: 2px 0; font-size: 13px; color: #aaa;"><strong>ID Mascota:</strong> ${sol.mascotaId || sol.id_mascota}</p>
+                  <p style="margin: 5px 0; font-size: 14px; color: #eee; font-style: italic;">"${sol.mensaje || 'Sin observaciones'}"</p>
+                </div>
+                <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; 
+                  background-color: ${sol.estado === 'Aprobada' ? '#2e7d32' : sol.estado === 'Rechazada' ? '#c62828' : '#ef6c00'}; color: white;">
+                  ${sol.estado}
+                </span>
+              </div>
+
+              ${sol.estado === 'Pendiente' ? `
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                  <button class="btn-aprobar" data-id="${sol.id}" style="flex: 1; padding: 6px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aprobar 🟢</button>
+                  <button class="btn-rechazar" data-id="${sol.id}" style="flex: 1; padding: 6px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Rechazar 🔴</button>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')
+        }
+      </div>
+    `;
+
+    document.getElementById('volverAdminDesdeSolBtn').addEventListener('click', () => {
+      renderAdminPanel(usuario);
+    });
+
+    // MANEJADOR DINÁMICO PARA ACTUALIZAR ESTADO (PATCH)
+    const procesarEstado = async (solicitudId, nuevoEstado) => {
+      try {
+        const resPatch = await fetch(`http://localhost:3000/api/mascotas/adopciones/${solicitudId}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-role': usuario.rol
+          },
+          body: JSON.stringify({ nuevo_estado: nuevoEstado }) // 'Aprobada' o 'Rechazada'
+        });
+
+        if (resPatch.ok) {
+          alert(`¡Solicitud #${solicitudId} cambiada a estado: ${nuevoEstado}! 🐾`);
+          renderControlSolicitudes(usuario); // Recarga la lista en tiempo real
+        } else {
+          const errData = await resPatch.json();
+          alert(`Error del servidor: ${errData.error || 'No se pudo procesar el cambio.'}`);
+        }
+      } catch (err) {
+        console.error("Error en petición PATCH:", err);
+        alert("Error de conexión con el backend.");
+      }
+    };
+
+    // Vincular clics de aprobación
+    document.querySelectorAll('.btn-aprobar').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        procesarEstado(id, 'Aprobada');
+      });
+    });
+
+    // Vincular clics de rechazo
+    document.querySelectorAll('.btn-rechazar').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        procesarEstado(id, 'Rechazada');
+      });
+    });
+
+  } catch (error) {
+    console.error("Error cargando panel de control de solicitudes:", error);
+    alert("Error al conectar con las rutas de adopciones.");
+  }
+}
+
 
 function renderAdoptantePanel(usuario) {
   console.log(usuario);
@@ -558,12 +609,16 @@ async function renderMatches(usuario) {
 
       const mascota = mascotas[currentIndex];
 
+      const urlFoto = mascota.especie.toLowerCase() === 'perro' 
+        ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500'
+        : 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500';
+
       loginContainer.innerHTML = `
 
         <div class="match-card">
 
           <img
-            src="${mascota.fotos?.[0] || 'https://picsum.photos/400'}"
+            src="${urlFoto?.[0] || 'https://picsum.photos/400'}"
             class="match-img"
           >
 
@@ -762,6 +817,9 @@ registerForm.addEventListener('submit', async (event) => {
   const password =
     document.getElementById('registerPassword').value;
 
+  const telefono = 
+    document.getElementById('registerPhone').value;  
+
   try {
 
     const response = await fetch(
@@ -777,7 +835,8 @@ registerForm.addEventListener('submit', async (event) => {
         body: JSON.stringify({
           nombre,
           email,
-          password
+          password,
+          telefono
         })
 
       }

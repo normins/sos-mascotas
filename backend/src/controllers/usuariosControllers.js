@@ -7,7 +7,7 @@ let usuariosMock = global.usuariosCompartidos || [];
 // 1. Registro de usuarios encriptados
 exports.registrarUsuario = async (req, res, next) => {
   try {
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, telefono } = req.body;
 
     if (!nombre || !email || !password) {
       return res.status(400).json({ error: "Nombre, email y password son requeridos." });
@@ -24,11 +24,9 @@ exports.registrarUsuario = async (req, res, next) => {
       return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
     }
 
-    // Encriptación: Generar el hash de la contraseña (Costo de procesamiento: 10)
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Modo simulador: Guardamos el usuario con la clave hasheada en el array de usuariosMock
     if (db.isSimulated()) {
       let usuariosMock = global.usuariosCompartidos || [];
 
@@ -46,6 +44,7 @@ exports.registrarUsuario = async (req, res, next) => {
         nombre, 
         email: emailFormat, 
         password: passwordHash,
+        telefono: telefono || null,
         rol: "adoptante" 
       };
       usuariosMock.push(nuevoUsuario);
@@ -57,16 +56,14 @@ exports.registrarUsuario = async (req, res, next) => {
       });
     }
 
-    // Base de datos real
     const consultaExiste = 'SELECT id FROM usuario WHERE email = $1';
     const resultadoExiste = await db.query(consultaExiste, [emailFormat]);
     if (resultadoExiste.rows.length > 0) {
       return res.status(409).json({ error: "El email ya está registrado." });
     }
 
-    // Insertamos el passwordHash en lugar de la clave original
-    const queryInsert = 'INSERT INTO usuario (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol';
-    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, 'adoptante']);
+    const queryInsert = 'INSERT INTO usuario (nombre, email, password, telefono, rol) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, email, telefono, rol';
+    const { rows } = await db.query(queryInsert, [nombre, emailFormat, passwordHash, telefono || null, 'adoptante']);
     
     return res.status(201).json({ mensaje: "Usuario registrado en BD real con encriptación", usuario: rows[0] });
   } catch (error) {
@@ -86,28 +83,22 @@ exports.iniciarSesion = async (req, res, next) => {
 
     const emailFormat = email.trim().toLowerCase();
 
-    // Modo simulador
     if (db.isSimulated()) {
-      //  Sincronizar con el Seeder al entrar a la función
       let usuariosMock = global.usuariosCompartidos || [];
       console.log(`[Login Seguro Simulador] Verificando hash para: ${emailFormat}`);
       
       const usuarioExiste = usuariosMock.find(u => u.email === emailFormat);
       
       if (!usuarioExiste) {
-        console.log(`[Login Debug] No se encontró ningún usuario con el email: ${email}`);
         return res.status(401).json({ error: "Credenciales inválidas", detalle: "El correo electrónico no esta registrado." });
       }
 
-      // Comparación segura: Comparamos la clave de Postman contra el Hash guardado
       const passwordValida = (password === usuarioExiste.password || usuarioExiste.password.startsWith('$2b$'));
       
       if (!passwordValida) {
-        console.log("[Login Debug] Contraseña incorrecta matemáticamente.");
         return res.status(401).json({ error: "Credenciales inválidas", detalle: "La contraseña es incorrecta." });
       }
 
-      console.log("[Login Debug] ¡Login exitoso simulado!");
       return res.status(200).json({
         mensaje: "¡Inicio de sesión exitoso y seguro (Simulado)!",
         usuario: {
@@ -119,7 +110,6 @@ exports.iniciarSesion = async (req, res, next) => {
       });
     }
 
-    // Base de datos real
     const queryTexto = 'SELECT * FROM usuario WHERE email = $1';
     const { rows } = await db.query(queryTexto, [emailFormat]);
 
@@ -129,7 +119,6 @@ exports.iniciarSesion = async (req, res, next) => {
 
     const usuarioReal = rows[0];
     
-    // Comparación segura en Base de datos real 
     const passwordRealCorrecto = await bcrypt.compare(password, usuarioReal.password);
     if (!passwordRealCorrecto) {
       return res.status(401).json({ error: "Credenciales inválidas" });
@@ -151,32 +140,20 @@ exports.iniciarSesion = async (req, res, next) => {
 };
 
 
-// HISTORIAL DE ADOPCIONES DE UN USUARIO (ENFOQUE COMPACTO)
+// 3. HISTORIAL DE ADOPCIONES DE UN USUARIO
 exports.obtenerAdopcionesUsuario = async (req, res, next) => {
   try {
-    const usuarioId = parseInt(req.params.usuarioId); // Capturamos el :usuarioId de la URL
+    const usuarioId = parseInt(req.params.usuarioId);
 
-    // Modo simulador: Para testear el historial, el usuario debe existir en el array de usuariosMock
     if (db.isSimulated()) {
-      //  Forzar sincronización con el Seeder al entrar a la función
       let usuariosMock = global.usuariosCompartidos || [];
       console.log(`\n[Historial Simulador] Buscando adopciones para Usuario ID: ${usuarioId}`);
-
-      // Como el array de adopcionesMock vive en mascotasControllers, podemos simular una consulta 
-      // yendo a buscar todas las que coincidan con este usuarioId.
-
 
       const usuarioExiste = usuariosMock.find(u => u.id === usuarioId);
       if (!usuarioExiste) {
         return res.status(404).json({ error: "El usuario indicado no existe en el simulador." });
       }
-
-      // IMPORTANTE: Para que el simulador de usuarios "vea" las solicitudes creadas en mascotas,
-      // Express nos permite acceder a variables globales o compartidas. Para esta prueba local, 
-      // el filtro buscará en la lista que venimos llenando por detrás.
-      // (Si no encuentra ninguna, devolverá un array vacío [], que es la respuesta correcta si el usuario no postuló a nadie aún).
       
-      // Simulamos que filtramos la tabla de adopciones
       const misSolicitudesSimuladas = global.adopcionesCompartidas 
         ? global.adopcionesCompartidas.filter(a => a.usuario_id === usuarioId)
         : [];
@@ -188,13 +165,11 @@ exports.obtenerAdopcionesUsuario = async (req, res, next) => {
       });
     }
 
-    // Base de datos real (La consulta SQL que usará tu equipo para unir todo)
-    // Usamos un JOIN para traer no solo el trámite, sino también el nombre y foto de la mascota elegida
-    const queryTexto = `
-      SELECT a.id as solicitud_id, a.estado, a.mensaje, a.fecha_creacion,
-             m.nombre as mascota_nombre, m.foto as mascota_foto
-      FROM adopciones a
-      INNER JOIN mascotas m ON a.mascotas_id = m.id_mascota
+      const queryTexto = `
+      SELECT a.id as solicitud_id, a.estado, a.observaciones as mensaje, a.fecha_creacion,
+             m.nombre as mascota_nombre, m.especie as mascota_especie
+      FROM solicitud_adopcion a
+      INNER JOIN mascota m ON a.mascota_id = m.id
       WHERE a.usuario_id = $1
       ORDER BY a.id DESC
     `;
@@ -222,7 +197,6 @@ exports.guardarPerfilAdopcion = async (req, res, next) => {
       return res.status(400).json({ error: "id_usuario es requerido." });
     }
 
-    // Modo simulador
     if (db.isSimulated()) {
       console.log(`[Perfil Adopción Simulador] Guardando perfil para usuario: ${id_usuario}`);
       return res.status(201).json({
@@ -231,21 +205,62 @@ exports.guardarPerfilAdopcion = async (req, res, next) => {
       });
     }
 
-    // Base de datos real
+    const otrasMascotasBooleano = otras_mascotas !== 'No';
     const queryInsert = `
       INSERT INTO perfil_adopcion (usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio)
       VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (usuario_id) DO UPDATE SET
-        tipo_vivienda = $2, tiene_patio = $3, experiencia = $4, otras_mascotas = $5, preferencia_tamanio = $6
+        tipo_vivienda = $2,
+        tiene_patio = $3, 
+        experiencia = $4, 
+        otras_mascotas = $5, 
+        preferencia_tamanio = $6
       RETURNING id, usuario_id, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio
     `;
 
-    const { rows } = await db.query(queryInsert, [id_usuario, tipo_vivienda, tiene_patio, experiencia, otras_mascotas, preferencia_tamanio]);
+    const { rows } = await db.query(queryInsert, [
+      id_usuario,
+      tipo_vivienda,
+      tiene_patio, 
+      experiencia, 
+      otrasMascotasBooleano, 
+      preferencia_tamanio]);
 
     return res.status(201).json({
       mensaje: "Perfil de adopción guardado en BD real",
       perfil: rows[0]
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 5. Obtener el perfil de adopción (Precarga para el frontend)
+exports.obtenerPerfilAdopcion = async (req, res, next) => {
+  try {
+    const usuarioId = parseInt(req.params.usuarioId);
+
+    if (db.isSimulated()) {
+      return res.status(200).json({ perfil: null });
+    }
+
+    const queryTexto = 'SELECT * FROM perfil_adopcion WHERE usuario_id = $1';
+    const { rows } = await db.query(queryTexto, [usuarioId]);
+
+    if (rows.length === 0) {
+      return res.status(200).json({ perfil: null, mensaje: "Sin perfil previo." });
+    }
+
+    const perfilBD = rows[0];
+
+    // Pasamos el booleano de la BD al texto que espera el <select> del HTML
+    if (perfilBD.otras_mascotas === true) {
+      perfilBD.otras_mascotas = 'Ambos'; // Valor por defecto en la interfaz si tiene mascotas
+    } else if (perfilBD.otras_mascotas === false) {
+      perfilBD.otras_mascotas = 'No';
+    }
+
+    return res.status(200).json({ perfil: rows[0] });
   } catch (error) {
     next(error);
   }

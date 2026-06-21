@@ -12,6 +12,9 @@ const reportesRoutes = require('./routes/reportes');
 const adopcionesRoutes = require('./routes/adopcionesRoutes');
 const donacionesRoutes = require('./routes/donaciones');
 const voluntariosRoutes = require('./routes/voluntarios');
+const publicacionesRoutes = require('./routes/publicaciones');
+const requisitosRoutes = require('./routes/requisitos');
+const hogarTransitoRoutes = require('./routes/hogarTransito');
 
 // Función principal async para inicializar la app
 const inicializarApp = async () => {
@@ -24,9 +27,12 @@ const inicializarApp = async () => {
 
     // 3. Middleware para recibir datos en formato JSON
     app.use(express.json());
+    
+// 4. Cargar datos semilla en PostgreSQL
+await seeder.inicializarDatosPostgres();
 
-    // 4. Inyectar base de datos simulada de contingencia
-    seeder.inicializarDatosSemilla();
+// Mantener también el modo simulador en memoria
+seeder.inicializarDatosSemilla();
 
     // 5. Configurar las rutas del frontend
     // Ruta Muro -> Catálogo de mascotas
@@ -51,19 +57,22 @@ const inicializarApp = async () => {
     app.use('/api/adopciones', adopcionesRoutes);
     app.use('/api/donaciones', donacionesRoutes);
     app.use('/api/voluntarios', voluntariosRoutes);
+    app.use('/api/publicaciones', publicacionesRoutes);
+    app.use('/api/requisitos', requisitosRoutes);
+    app.use('/api/hogar-transito', hogarTransitoRoutes);
 
     // 7. Levantar el servidor
     app.listen(port, () => {
       console.log(`
 ==================================================================
-🚀 Servidor escuchando en http://localhost:${port}
-✅ Aplicación lista para aceptar solicitudes
+Servidor escuchando en http://localhost:${port}
+Aplicación lista para aceptar solicitudes
 ==================================================================
       `);
     });
 
   } catch (err) {
-    console.error('❌ Error crítico durante la inicialización:', err.message);
+    console.error('Error crítico durante la inicialización:', err.message);
     console.error('El servidor intentará continuar en MODO SIMULADOR...');
 
     // Iniciar servidor incluso si falla BD (para modo simulador)
@@ -77,7 +86,7 @@ const inicializarApp = async () => {
     app.listen(port, () => {
       console.log(`
 ==================================================================
-⚠️ SERVIDOR EN MODO SIMULADOR
+SERVIDOR EN MODO SIMULADOR
 Escuchando en http://localhost:${port} (datos en memoria)
 ==================================================================
       `);
