@@ -1,3 +1,5 @@
+const db = require('./config/db');
+
 // SIMULADOR DE DATOS SEMILLA (PLAN DE CONTINGENCIA)
 exports.inicializarDatosSemilla = () => {
   console.log("\n [Seeder] Poblando memoria RAM con datos de contingencia...");
@@ -8,7 +10,7 @@ exports.inicializarDatosSemilla = () => {
     id: 1, 
     nombre: "Admin SOS", 
     email: "admin@sosmascotas.org", 
-    password: "$2b$10$7R6Vb4vM2X6qXG8H7KzOueW6vN3hD7r4YeE89r6M5N4y4v4v4v2S",
+    password: "$2b$10$$2b$10$JkYOusKZOO7rT24Zt1OZJeX14UQlHyR1Soz9UNHZA1TSAmlWr5R/W",
     
     rol: "admin" 
   },
@@ -16,7 +18,7 @@ exports.inicializarDatosSemilla = () => {
     id: 2, 
     nombre: "Juan Adoptante", 
     email: "juan@correo.com", 
-    password: "$2b$10$7R6Vb4vM2X6qXG8H7KzOueW6vN3hD7r4YeE89r6M5N4y4v4v4v2S",
+    password: "$2b$10$$2b$10$JkYOusKZOO7rT24Zt1OZJeX14UQlHyR1Soz9UNHZA1TSAmlWr5R/W",
     rol: "adoptante" 
   }
 ];
@@ -65,4 +67,81 @@ exports.inicializarDatosSemilla = () => {
   ];
 
   console.log("[Seeder] ¡Sistema inicializado con éxito! Listo para la defensa.");
+};
+
+
+exports.inicializarDatosPostgres = async () => {
+  try {
+
+    // Usuarios
+    const usuarios = await db.query('SELECT COUNT(*) FROM usuario');
+
+    if (parseInt(usuarios.rows[0].count) === 0) {
+
+      await db.query(`
+        INSERT INTO usuario (nombre, email, password, rol)
+        VALUES
+        (
+          'Admin SOS',
+          'admin@sosmascotas.org',
+          '$2b$10$JkYOusKZOO7rT24Zt1OZJeX14UQlHyR1Soz9UNHZA1TSAmlWr5R/W',
+          'admin'
+        ),
+        (
+          'Juan Adoptante',
+          'juan@correo.com',
+          '$2b$10$JkYOusKZOO7rT24Zt1OZJeX14UQlHyR1Soz9UNHZA1TSAmlWr5R/W',
+          'adoptante'
+        )
+      `);
+
+      console.log('[Seeder] Usuarios semilla cargados.');
+    }
+
+
+    // Mascotas
+    const mascotas = await db.query('SELECT COUNT(*) FROM mascotas');
+
+    if (parseInt(mascotas.rows[0].count) === 0) {
+      
+      
+      const admin = await db.query(
+  "SELECT id FROM usuario WHERE email = 'admin@sosmascotas.org'"
+);
+
+const adminId = admin.rows[0].id;
+
+
+await db.query(`
+INSERT INTO mascotas
+(nombre, especie, sexo, edad, tamanio, estado, descripcion, usuario_id)
+VALUES
+(
+  'Luna',
+  'Perro',
+  'Hembra',
+  2,
+  'Mediano',
+  'Disponible',
+  'Muy juguetona, ideal para familias con niños.',
+  $1
+),
+(
+  'Simba',
+  'Gato',
+  'Macho',
+  1,
+  'Pequeño',
+  'Disponible',
+  'Rescatado de una colonia, muy mimoso.',
+  $1
+)
+`, [adminId]);
+
+      console.log('[Seeder] Mascotas semilla cargadas.');
+    }
+
+  } catch (err) {
+    console.error('[Seeder] Error cargando datos semilla:', err.message);
+  }
 };
